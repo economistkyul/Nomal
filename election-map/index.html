@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}</style>
+<title>세계 선거 지도</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@600;800&display=swap">
+<style>
+/* Layout: 상단 요약 → 다가오는 투표일 띠 → (지구본 | 선거 목록) → 선택한 선거 상세. 모바일은 한 줄로 쌓는다. */
+:root{
+  --bg:#EDF0F3; --surface:#FFFFFF; --ink:#14202B; --muted:#5B6773; --line:#D6DBE1; --edge:#AEB8C2;
+  --sea:#DCE6EE; --land:#C5CED6; --live:#D98200; --soon:#5A49D6; --done:#4E8A72;
+  --live-bg:#FBEBD0; --soon-bg:#E6E2FA; --done-bg:#DDEEE6;
+  --demo:#2F63CC; --rep:#C2443A; --unk:#9AA6B1; --accent:#14202B;
+  --f-display:"Noto Serif KR","Nanum Myeongjo",serif;
+  --f-body:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-data:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D131A; --surface:#151D26; --ink:#E7ECF1; --muted:#96A3B0; --line:#26323E; --edge:#3A4856;
+  --sea:#0F1A25; --land:#2A3744; --live:#F2A93B; --soon:#9186F2; --done:#7DB59C;
+  --live-bg:#3A2D14; --soon-bg:#262245; --done-bg:#1D3329;
+  --demo:#6F9EF2; --rep:#E5796E; --unk:#5E6C79; --accent:#E7ECF1; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D131A; --surface:#151D26; --ink:#E7ECF1; --muted:#96A3B0; --line:#26323E; --edge:#3A4856;
+  --sea:#0F1A25; --land:#2A3744; --live:#F2A93B; --soon:#9186F2; --done:#7DB59C;
+  --live-bg:#3A2D14; --soon-bg:#262245; --done-bg:#1D3329;
+  --demo:#6F9EF2; --rep:#E5796E; --unk:#5E6C79; --accent:#E7ECF1; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
+.wrap{max-width:1240px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--soon);outline-offset:2px}
+.num{font-family:var(--f-data);font-variant-numeric:tabular-nums}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(26px,4.2vw,38px);line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+.meta{margin:4px 0 0;color:var(--muted);font-size:13px}
+.counts{display:flex;gap:8px;flex-wrap:wrap}
+.cnt{display:flex;align-items:center;gap:8px;padding:8px 14px;border:1px solid var(--line);background:var(--surface);border-radius:8px}
+.cnt[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.cnt b{font-family:var(--f-data);font-size:20px;font-weight:500}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--unk)}
+.dot.live{background:var(--live)} .dot.soon{background:var(--soon)} .dot.done{background:var(--done)}
+
+/* next strip */
+.next{display:flex;flex-direction:column;gap:8px}
+.next h2,.sec-h{margin:0;font-size:12px;letter-spacing:.08em;color:var(--muted);font-weight:700;text-transform:uppercase}
+.strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.chip{flex:none;display:flex;flex-direction:column;gap:2px;min-width:132px;text-align:left;padding:8px 12px;border:1px solid var(--line);background:var(--surface);border-radius:8px}
+.chip .d{font-family:var(--f-data);font-size:12px;color:var(--muted)}
+.chip .n{font-weight:700}
+.chip .k{font-family:var(--f-data);font-size:12px}
+.chip.live .k{color:var(--live)} .chip.soon .k{color:var(--soon)}
+
+/* board */
+.board{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.mapcard{display:flex;flex-direction:column}
+.tools{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--line)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:6px}
+.btns{display:flex;gap:6px}
+.btn{padding:5px 10px;border:1px solid var(--line);background:var(--surface);border-radius:6px;font-size:13px}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+#mapbox{position:relative;background:var(--sea);border-radius:0 0 10px 10px;overflow:hidden;touch-action:pan-y}
+#mapbox.globe{background:var(--surface)}
+#map{width:100%}
+#map svg{display:block;cursor:grab}
+.sphere{fill:var(--sea);stroke:var(--edge);stroke-width:1}
+.datamaps-subunit{transition:opacity .15s;cursor:pointer}
+.datamaps-subunit:hover{opacity:.8}
+.datamaps-subunit.sel{stroke:var(--ink);stroke-width:1.6}
+.mk{cursor:pointer}
+.mk circle.core{stroke:var(--surface);stroke-width:1.5}
+.mk circle.ring{fill:none;stroke-width:1.5;transform-box:fill-box;transform-origin:center;animation:pulse 2s ease-out infinite}
+.mk.sel circle.core{stroke:var(--ink);stroke-width:2.5}
+@keyframes pulse{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.2);opacity:0}}
+@media (prefers-reduced-motion:reduce){.mk circle.ring{animation:none;opacity:.5}}
+.tip{position:absolute;pointer-events:none;z-index:3;padding:6px 9px;border-radius:6px;background:var(--ink);color:var(--bg);font-size:12px;line-height:1.4;max-width:220px;opacity:0;transition:opacity .1s}
+.tip.on{opacity:1}
+.zoom{position:absolute;right:10px;bottom:10px;display:flex;flex-direction:column;gap:4px}
+.zoom .btn{width:32px;height:32px;padding:0;font-size:18px;line-height:1}
+.mapfail{padding:24px;color:var(--muted)}
+.hint{padding:8px 12px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+
+/* list */
+.listcard{display:flex;flex-direction:column}
+.filters{display:flex;flex-direction:column;gap:8px;padding:12px;border-bottom:1px solid var(--line)}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.filters input,.filters select{padding:7px 10px;border:1px solid var(--line);background:var(--bg);border-radius:6px;min-width:0;flex:1 1 120px}
+.pill{padding:4px 10px;border:1px solid var(--line);background:var(--surface);border-radius:99px;font-size:12px}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list{overflow-y:auto;max-height:560px;display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:2px 10px;align-items:center;text-align:left;padding:10px 12px;border:0;border-bottom:1px solid var(--line);background:transparent;width:100%}
+.item:last-child{border-bottom:0}
+.item[aria-current="true"]{background:var(--bg);box-shadow:inset 3px 0 0 var(--ink)}
+.item .n{font-weight:700;min-width:0;overflow-wrap:anywhere}
+.item .s{grid-column:2;color:var(--muted);font-size:12px;min-width:0}
+.item .k{font-family:var(--f-data);font-size:12px;text-align:right;white-space:nowrap}
+.empty{padding:24px 12px;color:var(--muted)}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
+.tag.live{background:var(--live-bg);color:var(--live)} .tag.soon{background:var(--soon-bg);color:var(--soon)} .tag.done{background:var(--done-bg);color:var(--done)}
+
+/* detail */
+.detail{padding:0;scroll-margin-top:12px}
+.dhead{display:flex;flex-wrap:wrap;gap:8px 16px;justify-content:space-between;align-items:flex-start;padding:16px 18px;border-bottom:1px solid var(--line)}
+.dhead h2{margin:6px 0 2px;font-family:var(--f-display);font-size:clamp(20px,3vw,26px);line-height:1.25;text-wrap:balance}
+.dhead p{margin:0;color:var(--muted)}
+.big{font-family:var(--f-data);font-size:28px;font-weight:500;line-height:1}
+.big small{display:block;font-family:var(--f-body);font-size:12px;color:var(--muted);margin-top:4px;font-weight:400}
+.tabs{display:flex;gap:2px;padding:0 12px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{flex:none;padding:10px 14px;border:0;background:none;border-bottom:2px solid transparent;color:var(--muted);font-weight:500}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:700}
+.panel{padding:18px;display:flex;flex-direction:column;gap:18px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px 28px}
+.panel h3{margin:0 0 8px;font-size:13px;font-weight:700}
+.lead{font-size:15px;margin:0;max-width:70ch}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}
+.facts dt{color:var(--muted)} .facts dd{margin:0;min-width:0;overflow-wrap:anywhere}
+ul.pts{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.bar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) auto;gap:10px;align-items:center;margin-bottom:8px}
+.bar .t{height:12px;background:var(--bg);border-radius:3px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:var(--muted);border-radius:3px}
+.bar.lead1 .t i{background:var(--ink)}
+.bar .v{font-family:var(--f-data);font-size:13px;text-align:right;white-space:nowrap}
+.stack{margin-bottom:14px}
+.stack .lbl{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-bottom:4px}
+.stack .track{position:relative;display:flex;height:22px;border-radius:4px;overflow:hidden;background:var(--bg)}
+.stack .track i{display:block;height:100%}
+.stack .maj{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink)}
+.stack .leg{display:flex;flex-wrap:wrap;gap:2px 12px;margin-top:4px;font-size:12px}
+.seg-d{background:var(--demo)} .seg-r{background:var(--rep)} .seg-u{background:var(--unk)}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:700}
+td.w{white-space:normal;min-width:140px}
+.res-d{color:var(--demo);font-weight:700} .res-r{color:var(--rep);font-weight:700} .res-u{color:var(--muted)}
+.note{margin:0;padding:10px 12px;border-radius:6px;background:var(--bg);color:var(--muted);font-size:13px}
+.src{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px}
+.src a{color:var(--muted);text-underline-offset:2px}
+.foot{color:var(--muted);font-size:12px;display:flex;flex-direction:column;gap:4px}
+.foot p{margin:0;max-width:90ch}
+
+@media (max-width:860px){
+  .board{grid-template-columns:minmax(0,1fr)}
+  .list{max-height:420px}
+  .item{padding:12px}
+  .panel{padding:14px}
+  .bar{grid-template-columns:minmax(0,1fr) auto}
+  .bar .t{grid-column:1/-1;order:3}
+}
+.easy{padding:14px 18px;background:var(--bg);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.easy .eh{margin:0;font-family:var(--f-display);font-weight:600;font-size:17px;line-height:1.5;text-wrap:balance}
+.easy .ew{margin:0;color:var(--muted);max-width:70ch}
+.mchips{display:flex;flex-wrap:wrap;gap:6px}
+.mchip{display:inline-flex;gap:6px;align-items:baseline;padding:3px 10px;border:1px solid var(--line);border-radius:99px;background:var(--surface);font-size:12px}
+.mchip b{font-family:var(--f-data);font-weight:500;color:var(--muted)}
+.star{display:block;margin-top:10px;margin-left:auto;padding:5px 10px;border:1px solid var(--line);background:var(--surface);border-radius:6px;font-family:var(--f-body);font-size:12px;font-weight:500}
+.star[aria-pressed="true"]{background:var(--live-bg);color:var(--live);border-color:var(--live)}
+.mkt{border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:12px}
+.mk-h{display:flex;gap:8px;align-items:center;margin-bottom:10px;font-weight:700}
+.plat{font-family:var(--f-data);font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px;background:var(--soon-bg);color:var(--soon);white-space:nowrap}
+.mk-f{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;font-size:12px;color:var(--muted)}
+.mk-f a{color:var(--muted)}
+ul.news{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+ul.news li{border-bottom:1px solid var(--line)}
+ul.news a{display:flex;flex-direction:column;gap:2px;padding:10px 2px;text-decoration:none;color:inherit}
+ul.news a:hover b{text-decoration:underline}
+ul.news span{color:var(--muted);font-size:13px}
+.gloss summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.gloss dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:8px 0 0;max-width:90ch}
+.gloss dt{font-weight:700;color:var(--ink)} .gloss dd{margin:0}
+.nav{display:none}
+@media (max-width:860px){
+  .wrap{padding-bottom:92px}
+  .nav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:20;gap:4px;background:var(--surface);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+  .nav button{flex:1;padding:10px 4px;border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:700;color:var(--muted)}
+  .nav button[aria-pressed="true"]{background:var(--live-bg);color:var(--live)}
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>세계 선거 지도</h1>
+      <p class="meta">자료 수집일 2026.11.04 · 진행 중, 예정, 종료 상태는 이 페이지를 연 날짜로 자동 계산됩니다.</p>
+    </div>
+    <div class="counts" id="counts"></div>
+  </header>
+
+  <section class="next" aria-label="다가오는 투표일">
+    <h2>다가오는 투표일</h2>
+    <div class="strip" id="strip"></div>
+  </section>
+
+  <section class="board">
+    <div class="card mapcard" id="secMap">
+      <div class="tools">
+        <div class="legend">
+          <span><i class="dot live"></i>진행 중</span>
+          <span><i class="dot soon"></i>예정</span>
+          <span><i class="dot done"></i>종료</span>
+          <span><i class="dot"></i>표시 없음</span>
+        </div>
+        <div class="btns" role="group" aria-label="지도 보기">
+          <button class="btn" id="pGlobe" aria-pressed="true">지구본</button>
+          <button class="btn" id="pFlat" aria-pressed="false">평면</button>
+        </div>
+      </div>
+      <div id="mapbox" class="globe">
+        <div id="map"></div>
+        <div class="zoom"><button class="btn" id="zIn" aria-label="확대">+</button><button class="btn" id="zOut" aria-label="축소">−</button></div>
+        <div class="tip" id="tip"></div>
+      </div>
+      <div class="hint">드래그하면 지구본이 돌아갑니다. 나라나 점을 누르면 아래에 상세가 열립니다. 호주 빅토리아주와 카보베르데는 점으로만 표시됩니다.</div>
+    </div>
+
+    <aside class="card listcard" id="secList">
+      <div class="filters">
+        <input id="q" type="search" placeholder="나라나 선거 이름 검색" aria-label="검색">
+        <div class="row" id="fStatus" role="group" aria-label="상태"></div>
+        <div class="row" id="fReg" role="group" aria-label="지역"></div>
+        <select id="fRange" aria-label="기간">
+          <option value="all">기간 전체</option>
+          <option value="d30">오늘 기준 ±30일</option>
+          <option value="y26">2026년</option>
+          <option value="y27">2027년</option>
+        </select>
+      </div>
+      <div class="list" id="list"></div>
+    </aside>
+  </section>
+
+  <section class="card detail" id="detail" aria-live="polite"></section>
+
+  <footer class="foot">
+    <details class="gloss"><summary>어려운 말 풀이</summary>
+      <dl>
+        <dt>예측시장</dt><dd>사람들이 "이 일이 일어난다"에 돈을 걸어 가격이 정해지는 시장입니다. 70%는 100원짜리 표가 70원에 거래된다는 뜻입니다. 폴리마켓과 칼시가 대표적입니다.</dd>
+        <dt>중간선거</dt><dd>대통령 임기 중간에 치르는 의회 선거로, 대통령에 대한 평가 성격이 강합니다.</dd>
+        <dt>일반 투표</dt><dd>"어느 당 후보를 찍겠느냐"를 전국 단위로 묻는 여론조사입니다.</dd>
+        <dt>과반</dt><dd>전체 의석의 절반을 넘는 숫자입니다. 이 표시선을 넘으면 혼자 법안을 통과시킬 수 있습니다.</dd>
+        <dt>양당 결선</dt><dd>호주에서 쓰는 방식으로, 두 유력 정당만 남겼을 때의 득표율입니다.</dd>
+        <dt>혼합비례(MMP)</dt><dd>뉴질랜드처럼 지역구와 정당 투표를 함께 쓰고, 정당 득표율대로 의석을 나누는 제도입니다.</dd>
+      </dl>
+    </details>
+    <p>미국 개표는 진행 중이라 수치가 바뀔 수 있습니다. 방송사 예측과 집계가 서로 다른 항목은 범위로 적었습니다.</p>
+    <p>예측시장 수치는 거래 가격이며 확률의 추정치입니다. 여론조사와 모델은 결과를 보장하지 않습니다.</p>
+    <p>종료된 선거 중 결과 칸이 비어 있는 곳은 아직 확인하지 못한 곳입니다. 날짜가 월까지만 적힌 선거는 일정이 확정되지 않았습니다.</p>
+  </footer>
+</div>
+
+<nav class="nav" aria-label="바로가기">
+  <button data-go="secMap">지도</button>
+  <button data-go="secList">선거 목록</button>
+  <button data-go="detail">상세</button>
+  <button data-go="fav" aria-pressed="false">★ 관심</button>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/datamaps/0.5.9/datamaps.world.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------- 데이터 ---------- */
+const REG={asia:"아시아",europe:"유럽",africa:"아프리카",americas:"아메리카",oceania:"오세아니아",mideast:"중동"};
+const L={
+  cnn:["CNN","https://www.cnn.com/2026/11/04/politics/live-news/midterm-election-congress"],
+  cbs:["CBS News","https://www.cbsnews.com/live-updates/house-election-results-2026/"],
+  cnbc:["CNBC","https://www.cnbc.com/2026/11/03/midterm-elections-2026-live-updates.html"],
+  nbc:["NBC News","https://www.nbcwashington.com/elections/election-day-2026-midterms-congress-results-live-updates/4175504/"],
+  msnow:["MS NOW","https://www.ms.now/news/democrats-sweep-house-senate-2026-midterm-election"],
+  pollcheck:["PollCheck","https://www.pollcheck.co.uk/us-midterms-2026"],
+  poliwave:["Poliwave","https://www.poliwave.com/us/fed/projection"],
+  idea:["IDEA 선거 추적","https://www.idea.int/democracytracker/elections-list"]
+};
+const E=[
+{id:"us",c:"미국",iso:"USA",reg:"americas",type:"중간선거",title:"미국 연방 중간선거",date:"2026-11-03",end:"2026-11-20",ll:[39,-98],
+ sum:"하원 435석 전체, 상원 35석, 36개 주 주지사를 뽑았습니다. 주요 방송사는 민주당이 상원과 하원을 모두 가져올 것으로 예측했고, 개표와 확정은 이어지고 있습니다.",
+ facts:[["투표일","2026.11.03 (화)"],["선거 범위","하원 435 · 상원 35 · 주지사 36개 주"],["선거 전 의석","상원 공화 53 대 47 · 하원 공화 219 대 214"],["새 의회 개원","2027.01.03"],["유권자 의견","89%가 생활비를 중요 요인으로 꼽음 (CBS)"]],
+ fc:{note:"선거 당일 오후 시점의 모델입니다. 결과가 나온 뒤에는 결과 탭을 기준으로 보세요.",bars:[["민주당 하원 장악",99,"99% 이상"],["민주당 상원 장악",85,"85%"]],src:["poliwave"]},
+ poll:{head:"선거 전 여론조사 평균 (10.27 기준)",bars:[["일반 투표 민주당 (양당 구도)",54.7,"54.7%"],["트럼프 지지",34.7,"34.7%"],["트럼프 반대",62.5,"62.5%"]],note:"일반 투표 격차는 민주당 +9.3입니다. 출구조사에서 트럼프 지지율은 38%였습니다 (CBS).",src:["pollcheck","cbs"]},
+ res:{head:"민주당, 상원과 하원 모두 다수당 전망",stacks:[
+   {t:"하원 (과반 218)",total:435,maj:218,segs:[["선거 전 민주",214,"d"],["선거 전 공화",219,"r"]],sub:"선거 전"},
+   {t:"하원 (과반 218)",total:435,maj:218,segs:[["민주 최소 250 (추정)",250,"d"],["공화·미확정",185,"u"]],sub:"현재 추정"},
+   {t:"상원 (과반 51)",total:100,maj:51,segs:[["선거 전 민주",47,"d"],["선거 전 공화",53,"r"]],sub:"선거 전"},
+   {t:"상원 (과반 51)",total:100,maj:51,segs:[["민주 51 이상 (AP)",51,"d"],["공화·미확정",49,"u"]],sub:"현재 추정"}],
+  pts:["상원은 선거 전 공화 53 대 47이었고, 민주당이 공화 의석을 최소 4곳 이상 가져와 51석에 도달했다고 AP가 집계했습니다. NBC는 6곳을 탈환했다고 보도했습니다.","하원은 민주당이 최소 250석 이상을 얻을 것으로 MS NOW가 추정했고, CBS는 최대 259석을 추정하되 최종 수치는 더 낮을 수 있다고 밝혔습니다.","트럼프 대통령은 결과를 받아들이겠다고 말했다고 CNBC 중계가 뉴욕타임스 보도를 인용했습니다."],
+  senate:[["아이오와","터렉 (민주) 대 힌슨 (공화)","D +0.4","접전","d","민주 승리 (공화 의석 탈환)"],["캔자스","해밀턴 (민주)","D +0.9","접전","d","민주 승리 (공화 의석 탈환)"],["메인","트로이 잭슨 (민주) 대 콜린스 (공화)","D +1.6","민주 우세","d","민주 승리 (콜린스 낙선)"],["텍사스","탈라리코 (민주)","D +2.6","민주 우세","d","민주 승리 (공화 의석 탈환)"],["미시간","엘사이드 (민주) 대 로저스 (공화)","D +3.2","민주 우세","d","민주 수성"],["노스캐롤라이나","쿠퍼 (민주)","-","-","d","민주 승리 (공화 의석 탈환)"],["조지아","오소프 (민주)","-","-","d","민주 수성"],["미네소타","플래내건 (민주)","-","-","d","민주 승리"],["뉴햄프셔","파파스 (민주)","-","-","d","민주 수성"],["네브래스카","오스본 (무소속)","I +0.6","접전","u","확인 중"],["사우스캐롤라이나","그레이엄 (공화)","R +1.8","공화 우세","u","확인 중"],["알래스카","펠톨라 (민주)","D +3.1","민주 우세","u","확인 중"]],
+  src:["cnn","cbs","cnbc","nbc","msnow"]},
+ src:["cnn","cbs","cnbc","nbc","msnow","pollcheck","poliwave"]},
+
+{id:"nz",c:"뉴질랜드",iso:"NZL",reg:"oceania",type:"총선",title:"뉴질랜드 총선",date:"2026-11-07",start:"2026-10-26",end:"2026-11-27",ll:[-41.3,174.8],
+ sum:"국민당, ACT, NZ First 연립을 이끄는 룩슨 총리가 재선에 도전합니다. 사전투표는 10월 26일에 시작했고 본투표는 11월 7일 토요일입니다.",
+ facts:[["본투표","2026.11.07 (토) 현지 오전 9시~오후 7시"],["의석","120석, 정당명부 혼합비례 (MMP)"],["사전투표","10.26 시작"],["잠정 결과","투표 마감 후 순차 공개"],["공식 확정","11.27"],["현 총리","크리스토퍼 룩슨 (국민당)"]],
+ fc:{note:"공개된 정량 예측 모델은 확인하지 못했습니다. 노동당과 국민당 양강 구도에 NZ First가 3위로 올라선 접전으로 보도됩니다.",bars:[],src:["nzw"]},
+ poll:{head:"최근 여론 흐름",pts:["RNZ–Reid Research 최신 조사에서 NZ First가 3위로 올랐고, 이 조사 시리즈에서 8년 넘게 가장 높은 결과입니다 (RNZ, ODT 보도).","같은 조사에서 노동당도 지지가 올랐습니다.","8월 Taxpayers' Union–Curia 조사에서는 집권 연정이 근소한 과반을 유지했습니다 (Xinhua).","3월에는 집권 국민당 지지가 급락해 룩슨 총리 사퇴 압박이 있었으나 총리는 거부했습니다."],src:["nzp","odt"]},
+ src:["nzw","nzp","odt"]},
+
+{id:"vic",c:"호주 빅토리아주",iso:"AUS",marker:true,reg:"oceania",type:"주 총선",title:"빅토리아주 총선",date:"2026-11-28",start:"2026-11-18",end:"2026-12-19",ll:[-37.8,145],
+ sum:"노동당이 12년째 집권 중인 주 선거입니다. 7월에 주총리가 바뀐 뒤에도 여론조사에서는 야당 연합이 앞서 있습니다.",
+ facts:[["투표일","2026.11.28 (토)"],["선거 영장 발부","11.03"],["사전투표 시작","11.18"],["의석","하원 88 · 상원 40"],["현 주총리","벤 캐럴 (노동당, 7.28 앨런 사임 후)"],["야당 대표","제스 윌슨 (자유·국민 연합)"]],
+ fc:{note:"여론조사 기준으로 야당 연합이 우세해 정권 교체 가능성이 높게 거론됩니다. 별도 확률 모델은 확인하지 못했습니다.",bars:[],src:["vicn"]},
+ poll:{head:"양당 결선 기준 (Pryxis, The Australian)",bars:[["자유·국민 연합",55,"55"],["노동당",45,"45"]],note:"Newspoll도 야당 연합이 큰 폭으로 앞선다고 보도됐습니다 (MacroBusiness).",src:["vicn"]},
+ src:["vicp","vicn","vicw"]},
+
+{id:"cpv",c:"카보베르데",iso:"CPV",marker:true,reg:"africa",type:"대선",title:"카보베르데 대통령 선거",date:"2026-11-15",end:"2026-11-16",ll:[14.9,-23.5],
+ sum:"현직 대통령 호세 마리아 네베스가 재선을 노립니다. 과반 득표자가 없으면 11월 29일 결선을 치릅니다.",
+ facts:[["투표일","2026.11.15 (일) 현지 8시~18시"],["결선 (필요 시)","11.29"],["선거운동 기간","10.29~11.13"],["후보","6명 (네베스, 조아나 호자 등)"],["당선 조건","유효표 과반"]],
+ fc:{note:"공개된 여론조사나 모델은 확인하지 못했습니다.",bars:[],src:["cpvo"]},
+ src:["cpvo","cpvp","cpvw"]},
+
+{id:"esp",c:"스페인",iso:"ESP",reg:"europe",type:"조기 총선",title:"스페인 조기 총선",date:"2026-11-29",end:"2026-12-01",ll:[40.4,-3.7],
+ sum:"산체스 총리가 주택 정책 법안이 의회에서 부결된 뒤 10월 5일 조기 총선을 발표했습니다. 원래 일정은 2027년 여름이었습니다.",
+ facts:[["투표일","2026.11.29 (일)"],["의석","하원 350석, 과반 176석"],["공식 선거운동","11.13 시작"],["계기","10.2 주택 관련 왕령 2건 부결 (국민당, 복스, 훈츠 반대)"],["현 총리","페드로 산체스 (사회노동당)"]],
+ fc:{note:"여론조사 평균에서 국민당과 복스를 합친 의석이 과반을 넘습니다. 예측시장은 국민당 대표 페이호의 총리 취임에 높은 가격을 매겼습니다.",bars:[],
+  stacks:[{t:"여론조사 평균 의석 (과반 176)",total:350,maj:176,segs:[["국민당+복스 약 201",201,"r"],["사회노동당+기존 우군 약 146",146,"d"]]}],src:["esp1","esp2"]},
+ poll:{head:"득표율 평균 (PolitPro 집계 인용)",bars:[["국민당 (PP)",32.1,"32.1%"],["사회노동당 (PSOE)",26.4,"26.4%"],["복스 (Vox)",18.9,"18.9%"],["수마르·전선",6.4,"6.4%"],["포데모스",2.9,"2.9%"]],
+  rows:[["조사기관","국민당","사회노동당","복스"],["Sigma Dos (10.1~14)","31.5","25.3","19.5"],["IMOP (10.13~16)","28.5","27.1","20.0"],["CIS 국영 (10.1~6)","22.2","34.0","17.1"]],
+  note:"국영 CIS만 사회노동당이 11.8%p 앞서고 민간 조사는 모두 국민당이 앞섭니다. 민간 조사는 국민당과 복스를 합쳐 176석을 넘긴다고 봅니다.",src:["esp1","esp3"]},
+ src:["esp1","esp2","esp3","esp4"]},
+
+{id:"gmb",c:"감비아",iso:"GMB",reg:"africa",type:"대선",title:"감비아 대통령 선거",date:"2026-12-05",end:"2026-12-07",ll:[13.45,-16.6],
+ sum:"아다마 바로 대통령이 3선에 도전합니다. 야당은 우사이누 다르보, 탈리브 벤수다 등으로 나뉘어 있습니다. 결선 없이 한 번에 결정합니다.",
+ facts:[["투표일","2026.12.05 (토), 단일 투표"],["현직","아다마 바로 (NPP), 3선 도전"],["주요 후보","다르보 (UDP), 벤수다, 바카리 바지 (무소속), 바칠리 (GAP)"],["의회 선거","2027.04.10"],["쟁점","대통령 임기 제한 없는 헌법"]],
+ fc:{note:"정량 예측은 확인하지 못했습니다. 야당 분열이 현직에 유리하다는 분석이 있습니다.",bars:[],src:["gmb1"]},
+ poll:{head:"2025년 7월 조사 (Gambia Participates, 오래된 자료)",bars:[["바로",31,"31%"],["벤수다",18,"18%"],["다르보",12,"12%"],["칸데·파알 각",3,"3%"]],note:"다른 조사(CEPRSS)에서는 응답자 55%가 바로의 3선 출마에 반대했습니다. 부동층이 많습니다.",src:["gmb2"]},
+ src:["gmb1","gmb2","gmb3"]},
+
+{id:"hti",c:"아이티",iso:"HTI",reg:"americas",type:"대선·총선 2차",title:"아이티 2차 투표",date:"2026-12-06",ll:[18.9,-72.3],
+ sum:"8월 30일 1차 투표 뒤 열리는 대선과 총선 2차 투표입니다. 날짜는 잠정입니다.",
+ facts:[["1차 투표","2026.08.30"],["2차 투표","2026.12.06 (잠정)"],["참고","지방선거 포함 보도 (IDEA)"]],src:["idea","hti"]},
+
+{id:"ssd",c:"남수단",iso:"SSD",reg:"africa",type:"총선",title:"남수단 총선",date:"2026-12-22",ll:[4.85,31.6],
+ sum:"12월 22일로 예정됐습니다. 남수단 선거는 과거 여러 차례 연기된 이력이 있어 일정 변경 가능성을 열어 둬야 합니다.",
+ facts:[["예정일","2026.12.22"],["유형","대통령과 의회 (일반 선거)"]],src:["idea"]},
+
+{id:"fji",c:"피지",iso:"FJI",reg:"oceania",type:"총선",title:"피지 총선",date:"2026-12-31",approx:true,ll:[-17.7,178.1],
+ sum:"2026년 말에서 2027년 사이로 예상되며 날짜가 정해지지 않았습니다.",facts:[["일정","미확정"]],src:["idea"]},
+
+{id:"zaf",c:"남아프리카공화국",iso:"ZAF",reg:"africa",type:"지방선거",title:"남아공 지방선거",date:"2026-11-30",approx:true,ll:[-29,24],
+ sum:"2026년 11월에서 2027년 초 사이로 알려졌습니다. 정확한 투표일은 확인하지 못했으니 선관위 공지를 확인해야 합니다.",facts:[["일정","미확정, 확인 필요"]],src:["zaf"]},
+
+{id:"nga",c:"나이지리아",iso:"NGA",reg:"africa",type:"대선·총선",title:"나이지리아 대선·국회 선거",date:"2027-01-16",ll:[9.1,7.5],
+ sum:"선관위가 일정을 당겼습니다. 대통령과 국회 선거는 2027년 1월 16일, 주지사와 주의회 선거는 2월 6일입니다.",
+ facts:[["대통령·국회","2027.01.16 (토)"],["주지사·주의회","2027.02.06 (토)"],["이전 일정","2.20과 3.06 (라마단과 겹쳐 변경)"]],src:["nga"]},
+
+{id:"slv",c:"엘살바도르",iso:"SLV",reg:"americas",type:"대선·총선",title:"엘살바도르 선거",date:"2027-02-28",ll:[13.7,-89.2],
+ sum:"선거관리위원회가 2027년 2월 28일 선거 일정표를 공식 발표했습니다.",facts:[["투표일","2027.02.28 (일)"]],src:["slv"]},
+
+{id:"fin",c:"핀란드",iso:"FIN",reg:"europe",type:"총선",title:"핀란드 총선",date:"2027-04-18",approx:true,ll:[60.2,24.9],
+ sum:"2027년 4월 의회 선거입니다. 날짜는 월까지만 확인했습니다.",facts:[["일정","2027년 4월"]],src:["w27"]},
+
+{id:"fra",c:"프랑스",iso:"FRA",reg:"europe",type:"대선",title:"프랑스 대통령 선거",date:"2027-04-15",approx:true,ll:[46.6,2.4],
+ sum:"2027년 봄 대선입니다. 출처마다 날짜가 달라 월만 적었습니다.",facts:[["일정","2027년 4~5월"]],src:["w27"]},
+
+{id:"mex",c:"멕시코",iso:"MEX",reg:"americas",type:"중간선거",title:"멕시코 하원 선거",date:"2027-06-06",approx:true,ll:[23.6,-102.5],
+ sum:"하원 전체와 주지사, 시장 등 1,000개 넘는 자리를 바꿉니다. 선거 절차는 2026년 9월 10일 시작됐습니다.",facts:[["일정","2027년 6월"],["절차 시작","2026.09.10"]],src:["mex"]},
+
+{id:"gtm",c:"과테말라",iso:"GTM",reg:"americas",type:"대선·총선",title:"과테말라 선거",date:"2027-06-27",ll:[15.5,-90.2],
+ sum:"대통령과 의회를 한꺼번에 뽑습니다.",facts:[["투표일","2027.06.27"]],src:["w27"]},
+
+{id:"ken",c:"케냐",iso:"KEN",reg:"africa",type:"대선·총선",title:"케냐 선거",date:"2027-08-10",approx:true,ll:[0.2,37.9],
+ sum:"대통령, 국회, 상원 선거입니다. 날짜는 월까지만 확인했습니다.",facts:[["일정","2027년 8월"]],src:["w27"]},
+
+{id:"che",c:"스위스",iso:"CHE",reg:"europe",type:"총선",title:"스위스 연방의회 선거",date:"2027-10-24",ll:[46.8,8.2],
+ sum:"하원 격인 국민의회와 연방상원 격인 주의회를 뽑습니다.",facts:[["투표일","2027.10.24"]],src:["w27"]},
+
+{id:"nic",c:"니카라과",iso:"NIC",reg:"americas",type:"대선·총선",title:"니카라과 선거",date:"2027-11-07",approx:true,ll:[12.9,-85.2],
+ sum:"원래 2026년 11월이었으나 헌법 개정으로 2027년 11월로 미뤄졌습니다.",facts:[["일정","2027년 11월"],["이전 일정","2026년 11월"]],src:["idea","w27"]},
+
+/* ----- 종료 ----- */
+{id:"bra",c:"브라질",iso:"BRA",reg:"americas",type:"대선·총선",title:"브라질 대선·총선",date:"2026-10-25",ll:[-14.2,-51.9],
+ sum:"룰라 대통령이 결선에서 플라비우 보우소나루를 꺾고 4번째 임기를 얻었습니다. 보우소나루 측은 결과에 불복하며 무효를 주장합니다.",
+ facts:[["1차 투표","2026.10.04"],["결선","2026.10.25"],["취임","2027.01.05"],["선출 범위","대통령, 하원 513, 상원 54, 주지사 27"]],
+ res:{head:"룰라 51.76%로 결선 승리",rows:[["구분","후보","득표율"],["1차 (10.4)","플라비우 보우소나루 (PL)","47.03%"],["1차 (10.4)","룰라 (PT)","45.16%"],["결선 (10.25)","룰라 (PT)","51.76%"]],
+  pts:["1차에서는 보우소나루가 앞섰지만 결선에서 룰라가 400만 표 넘게 앞서며 뒤집었습니다.","1차 3위 이하는 아우구스투 쿠리 2.89%, 레난 산투스 2.24%, 카이아두 2.18%였습니다.","보우소나루는 결과 무효를 요구하고 있습니다."],src:["bra1","bra2"]},src:["bra1","bra2"]},
+
+{id:"isr",c:"이스라엘",iso:"ISR",reg:"mideast",type:"총선",title:"이스라엘 총선",date:"2026-10-27",ll:[31.4,35],
+ sum:"네타냐후 총리의 리쿠드가 최다 의석을 얻은 것으로 잠정 집계됐으나 연정 구성은 아직 정해지지 않았습니다.",
+ facts:[["투표일","2026.10.27"],["의석","120석, 과반 61"],["투표율 (잠정)","77.97%"]],
+ res:{head:"리쿠드 최다당 (잠정), 블록별 과반은 미정",rows:[["구분","의석"],["리쿠드","27"],["연정 블록 (i24 집계)","56"],["야당 블록","48"],["아랍계 정당","16"]],
+  pts:["위 수치는 잠정 개표 기준이며 확정 결과와 다를 수 있습니다.","총리 후보로 네타냐후와 가디 아이젠코트가 맞붙었습니다.","아랍계 정당 16석이 연정 구성의 변수입니다."],src:["isr1","isr2"]},src:["isr1","isr2"]},
+
+{id:"bgr",c:"불가리아",iso:"BGR",reg:"europe",type:"대선",title:"불가리아 대통령 선거",date:"2026-11-01",ll:[42.7,25.5],
+ sum:"현직 일리아나 요토바 대통령이 결선에서 안드레이 규로프를 꺾었습니다. 1차 투표율은 사상 최저였습니다.",
+ facts:[["1차 투표","2026.10.25"],["결선","2026.11.01"],["1차 투표율","23% 미만, 사상 최저"]],
+ res:{head:"요토바 대통령 결선 승리",pts:["1차에서는 요토바가 1위, 전 임시 총리 규로프가 2위로 결선에 올랐습니다.","규로프는 결선 마감 뒤 패배를 인정했습니다.","득표율 세부 수치는 확인하지 못했습니다."],src:["bgr1","bgr2"]},src:["bgr1","bgr2"]},
+
+{id:"srb",c:"세르비아",iso:"SRB",reg:"europe",type:"조기 총선",title:"세르비아 조기 총선",date:"2026-10-25",ll:[44,21],
+ sum:"약 2년간 이어진 학생 시위의 연장선에서 학생명부가 승리했고, 부치치 전 대통령은 패배를 인정했습니다.",
+ facts:[["투표일","2026.10.25"],["의석","250석"],["배경","부치치가 9.27 대통령직 사임 후 총리를 노리고 출마"]],
+ res:{head:"학생명부 승리, 부치치 패배 인정",rows:[["구분","수치"],["학생명부 득표율 (CeSID·Ipsos, 96% 개표)","52.9%"],["학생명부 의석 (부치치 발언 인용)","135~140"],["부치치 측 의석","약 105"]],
+  pts:["SNS는 2012년부터 집권해 왔습니다.","개표 초기에는 일부 보도가 엇갈렸으나 부치치 본인이 패배를 인정했습니다."],src:["srb1","srb2"]},src:["srb1","srb2"]},
+
+{id:"zmb",c:"잠비아",iso:"ZMB",reg:"africa",type:"대선·총선",title:"잠비아 총선",date:"2026-08-13",ll:[-13.1,27.8],
+ sum:"히치레마 대통령이 결선 없이 재선됐으나 야당은 부정 의혹을 제기하고 소송을 예고했습니다.",
+ facts:[["투표일","2026.08.13"],["취임","2026.09.01"]],
+ res:{head:"히치레마 61.5% 재선",rows:[["후보","득표","비율"],["히치레마 (UPND)","2,965,326","61.5%"],["문두빌레","1,856,217","약 38%"]],
+  pts:["개표가 한때 중단됐고 선거 요원 공격과 투표용지 도난이 있었습니다.","문두빌레 후보와 러닝메이트가 구금됐다는 보도가 있었습니다.","EU 관측단은 선거 직전 법 변경과 불평등한 선거운동 환경을 비판했습니다."],src:["zmb1","zmb2"]},src:["zmb1","zmb2"]},
+
+{id:"swe",c:"스웨덴",iso:"SWE",reg:"europe",type:"총선",title:"스웨덴 총선",date:"2026-09-13",ll:[62.2,15.3],
+ sum:"사민당이 최대당을 지켰으나 득표는 한 세기 만에 가장 낮았습니다. 적록 블록이 한 석 더 얻는 박빙이어서 정부 구성이 어렵습니다.",
+ facts:[["투표일","2026.09.13"],["의석","349석, 과반 175"],["투표율","84.9%"]],
+ res:{head:"적록 블록 176 대 중도우파 173 (잠정)",rows:[["구분","수치"],["사민당 득표율","28.1% (잠정)"],["적록 블록 의석","176"],["중도우파 블록 의석","173"]],
+  pts:["스웨덴민주당이 의회 입성 후 처음으로 득표가 줄었습니다.","두 블록 모두 내부 연정 구상이 달라 협상이 길어질 수 있습니다."],src:["swe1","swe2"]},src:["swe1","swe2"]},
+
+{id:"col",c:"콜롬비아",iso:"COL",reg:"americas",type:"대선",title:"콜롬비아 대통령 선거",date:"2026-06-21",ll:[4.6,-74.3],
+ sum:"트럼프가 지지한 우파 신인 아벨라르도 데 라 에스피에야가 1%p도 안 되는 차로 승리했습니다.",
+ facts:[["1차","2026.05.31"],["결선","2026.06.21"],["취임","2026.08.07"]],
+ res:{head:"데 라 에스피에야 49.66%로 당선",rows:[["후보","득표율"],["아벨라르도 데 라 에스피에야","49.66%"],["이반 세페다","48.70%"]],
+  pts:["두 후보 차이는 약 24만 7천 표였습니다.","선거관리 당국은 잠정 집계가 정확하다고 확인했고 세페다는 6월 24일 패배를 인정했습니다."],src:["col1"]},src:["col1"]},
+
+{id:"per",c:"페루",iso:"PER",reg:"americas",type:"대선",title:"페루 대통령 선거",date:"2026-06-07",ll:[-9.2,-75],
+ sum:"케이코 후지모리가 박빙의 결선에서 유효표 50.135%로 승리했고 7월 3일 선거심판원이 공식 선언했습니다.",
+ facts:[["1차","2026.04.12"],["결선","2026.06.07"],["공식 선언","2026.07.03"]],
+ res:{head:"후지모리 50.135%로 당선",rows:[["구분","후보","득표율"],["1차","케이코 후지모리","17.19%"],["1차","로베르토 산체스","12.03%"],["결선","케이코 후지모리","50.135%"]],
+  pts:["1차 후보는 35명이 넘어 표가 크게 갈렸습니다.","후지모리는 네 번째 결선 진출 끝에 처음 당선됐습니다."],src:["per1"]},src:["per1"]},
+
+{id:"hun",c:"헝가리",iso:"HUN",reg:"europe",type:"총선",title:"헝가리 총선",date:"2026-04-12",ll:[47.2,19.5],
+ sum:"야당 티서의 페테르 머저르가 압승해 오르반 총리의 16년 집권이 끝났습니다.",
+ facts:[["투표일","2026.04.12"],["의석","199석"],["신임 총리","페테르 머저르 (티서)"]],
+ res:{head:"티서 3분의 2 의석 확보",rows:[["정당","득표율","의석"],["티서 (머저르)","약 53%","138"],["피데스 (오르반)","-","55"]],
+  pts:["오르반은 선거 당일 밤 패배를 인정하며 결과를 고통스럽다고 표현했습니다.","머저르는 EU, NATO와의 관계 복원을 약속했습니다."],src:["hun1"]},src:["hun1"]},
+
+{id:"dnk",c:"덴마크",iso:"DNK",reg:"europe",type:"조기 총선",title:"덴마크 총선",date:"2026-03-24",ll:[56,10],
+ sum:"프레데릭센 총리가 그린란드 갈등 뒤 조기 총선을 열었으나 사민당은 1903년 이후 최악의 결과를 얻었습니다.",
+ facts:[["투표일","2026.03.24"],["의석","179석"],["투표율","83.98%"]],
+ res:{head:"적색 블록 84 대 청색 블록 77, 과반 미달",rows:[["정당","득표율","의석"],["사민당","21.9%","38"],["사회인민당","11.6%","20"],["자유당 (벤스트레)","10.1%","18"]],
+  pts:["프레데릭센은 사임한 뒤 국왕에게 정부 구성 협상 책임을 위임받았습니다.","국민당(DF)은 득표율이 3배 이상 늘어 9.1%를 얻었습니다.","중도 정당 모더레이츠가 실질적 승자로 평가됐습니다."],src:["dnk1"]},src:["dnk1"]},
+
+{id:"bgd",c:"방글라데시",iso:"BGD",reg:"asia",type:"총선",title:"방글라데시 총선",date:"2026-02-12",ll:[23.7,90.4],
+ sum:"2024년 봉기 이후 첫 총선에서 BNP가 3분의 2 이상 의석을 얻었고 타리크 라만이 총리가 됐습니다.",
+ facts:[["투표일","2026.02.12"],["투표율","59.44%"],["참고","아와미연맹은 출마 금지"]],
+ res:{head:"BNP와 연합 212석",rows:[["진영","의석"],["BNP와 연합","212 (299석 중)"],["자마아트 이슬라미 진영","77"]],
+  pts:["3개 선거구는 투표가 연기됐습니다.","자마아트 이슬라미는 당 역사상 최고 의석을 얻었습니다."],src:["bgd1","bgd2"]},src:["bgd1","bgd2"]},
+
+{id:"uga",c:"우간다",iso:"UGA",reg:"africa",type:"총선",title:"우간다 총선",date:"2026-01-12",ll:[1.4,32.3],sum:"1월 12일에 치러졌습니다.",facts:[["투표일","2026.01.12"]],src:["idea"]},
+{id:"ben",c:"베냉",iso:"BEN",reg:"africa",type:"대선",title:"베냉 대통령 선거",date:"2026-04-12",ll:[9.3,2.3],sum:"4월 12일에 치러졌습니다.",facts:[["투표일","2026.04.12"],["의회 선거","2026.01.11"]],src:["idea"]},
+{id:"svn",c:"슬로베니아",iso:"SVN",reg:"europe",type:"총선",title:"슬로베니아 총선",date:"2026-03-22",ll:[46.1,14.8],sum:"3월 22일에 치러졌습니다.",facts:[["투표일","2026.03.22"]],src:["idea"]},
+{id:"eth",c:"에티오피아",iso:"ETH",reg:"africa",type:"총선",title:"에티오피아 총선",date:"2026-06-01",ll:[9,38.7],sum:"6월 1일에 치러졌습니다.",facts:[["투표일","2026.06.01"]],src:["idea"]},
+{id:"cyp",c:"키프로스",iso:"CYP",reg:"europe",type:"총선",title:"키프로스 총선",date:"2026-05-24",ll:[35.1,33.4],sum:"5월 24일에 치러졌습니다.",facts:[["투표일","2026.05.24"]],src:["idea"]},
+{id:"arm",c:"아르메니아",iso:"ARM",reg:"europe",type:"총선",title:"아르메니아 총선",date:"2026-06-07",ll:[40.2,44.5],sum:"6월 7일에 치러졌습니다.",facts:[["투표일","2026.06.07"]],src:["idea"]}
+];
+
+/* 출처 링크 */
+const S={
+  cnn:["CNN","https://www.cnn.com/2026/11/04/politics/live-news/midterm-election-congress"],
+  cbs:["CBS News","https://www.cbsnews.com/live-updates/house-election-results-2026/"],
+  cnbc:["CNBC","https://www.cnbc.com/2026/11/03/midterm-elections-2026-live-updates.html"],
+  nbc:["NBC News","https://www.nbcwashington.com/elections/election-day-2026-midterms-congress-results-live-updates/4175504/"],
+  msnow:["MS NOW","https://www.ms.now/news/democrats-sweep-house-senate-2026-midterm-election"],
+  pollcheck:["PollCheck","https://www.pollcheck.co.uk/us-midterms-2026"],
+  poliwave:["Poliwave 모델","https://www.poliwave.com/us/fed/projection"],
+  nwk1:["Newsweek","https://newsweek.com/democrats-chances-of-flipping-senate-and-house-this-year-hit-record-high-11678269"],
+  fnn:["Federal News Network","https://federalnewsnetwork.com/prediction-markets/2026/10/tracking-us-senate-odds-midterms-two-weeks-away/"],
+  defi:["DeFi Rate 선거 확률","https://defirate.com/odds/2026-midterms/"],
+  pred:["PredScope (Polymarket 집계)","https://predscope.com/event/next-prime-minister-of-new-zealand-174"],
+  spin:["The Spinoff","https://thespinoff.co.nz/politics/18-03-2026/new-poll-offers-solace-for-luxon-but-election-hangs-by-a-thread"],
+  itst:["interest.co.nz","https://www.interest.co.nz/public-policy/136867/prime-minister-christopher-luxon-announces-new-zealand%E2%80%99s-2026-general-election"],
+  kal:["Kalshi 빅토리아주 시장","https://kalshi.com/markets/kxvictorianstate/victorian-state-election/kxvictorianstate-26nov28"],
+  nzw:["Wikipedia 뉴질랜드 총선","https://en.wikipedia.org/wiki/2026_New_Zealand_general_election"],
+  nzp:["Wikipedia 여론조사","https://en.wikipedia.org/wiki/Opinion_polling_for_the_2026_New_Zealand_general_election"],
+  odt:["ODT (RNZ 조사 보도)","https://www.odt.co.nz/node/3541160"],
+  vicp:["빅토리아 의회","https://www.parliament.vic.gov.au/election"],
+  vicn:["The Nightly (Pryxis 조사)","https://thenightly.com.au/politics/poll-shows-victorian-opposition-leader-jess-wilson-favoured-to-become-states-premier-at-november-election-c-23069499"],
+  vicw:["Wikipedia 빅토리아 선거","https://en.wikipedia.org/wiki/2026_Victorian_state_election"],
+  cpvo:["Rio Times 예측시장","https://www.riotimesonline.com/cabo-verde-markets-give-president-86-odds/"],
+  cpvp:["Rio Times 준비 현황","https://www.riotimesonline.com/cabo-verde-election-prep-halfway/"],
+  cpvw:["Wikipedia 카보베르데","https://en.wikipedia.org/wiki/2026_Cape_Verdean_presidential_election"],
+  esp1:["Rio Times 여론조사 추적","https://www.riotimesonline.com/spain-election-poll-tracker/"],
+  esp2:["Rio Times 예측시장","https://www.riotimesonline.com/spain-right-holds-poll-lead-left-splits/"],
+  esp3:["Rio Times CIS 대비","https://www.riotimesonline.com/spain-right-loses-ground-in-latest-poll/"],
+  esp4:["ITV 조기 총선 발표","https://www.itv.com/news/2026-10-05/spains-prime-minister-announces-snap-election-for-november"],
+  gmb1:["Surf Wiki 감비아","https://www.doc.surf/wiki/2026-gambian-presidential-election"],
+  gmb2:["AllAfrica 여론조사","https://allafrica.com/stories/202508220712.html"],
+  gmb3:["Trust Radio","https://trustradio.com.ng/en/gambia-sets-december-2026-presidential-election-date"],
+  idea:["IDEA 선거 추적","https://www.idea.int/democracytracker/elections-list"],
+  hti:["ASCOA 중남미 선거 안내","https://www.as-coa.org/content/guide-2026-latin-american-elections"],
+  zaf:["Wikipedia 2026 선거 목록","https://en.wikipedia.org/wiki/List_of_elections_in_2026"],
+  nga:["Nairametrics","https://nairametrics.com/?p=533202"],
+  slv:["엘살바도르 선거관리위원회 보도","https://dinero.com.sv/en/breaking_news/tse-officially-presents-the-electoral-calendar-for-the-2027-elections/"],
+  w27:["Wikipedia 2027 국가 선거 일정","https://en.wikipedia.org/wiki/2027_national_electoral_calendar"],
+  mex:["Expansión","https://politica.expansion.mx/mexico/2026/08/09/elecciones-2027-calendario-fechas-cargos"],
+  bra1:["Rio Times 1차 개표","https://www.riotimesonline.com/brazil-election-results-2026"],
+  bra2:["Benin Web TV 결선","https://beninwebtv.bj/en/brazil-lula-re-elected-against-flavio-bolsonaro-in-runoff/"],
+  isr1:["i24NEWS 개표","https://www.i24news.tv/en/news/israel-election-s-2026/final-results"],
+  isr2:["Wikipedia 여론조사와 잠정 결과","https://en.wikipedia.org/wiki/Opinion_polling_for_the_2026_Israeli_legislative_election"],
+  bgr1:["Wikipedia 불가리아 대선","https://en.wikipedia.org/wiki/2026_Bulgarian_presidential_election"],
+  bgr2:["Brussels Signal","https://brusselssignal.eu/2026/10/bulgaria-heads-for-presidential-run-off-after-record-low-turnout/"],
+  srb1:["Meduza","https://meduza.io/en/news/2026/10/26/serbia-s-former-president-aleksandar-vucic-concedes-defeat-in-parliamentary-election-to-student-led-opposition"],
+  srb2:["Charter97","https://charter97.org/en/news/2026/10/26/703159/"],
+  zmb1:["Al Jazeera","https://www.aljazeera.com/news/2026/8/18/zambias-hichilema-wins-second-term-as-president"],
+  zmb2:["SARDC","https://sardc.net/en/southern-african-news-features/hichilema-secures-second-term-avoids-run-off-in-zambia-poll/"],
+  swe1:["KAS 국가 보고서","https://www.kas.de/en/web/rlpsee/laenderberichte/detail/-/content/general-election-in-sweden"],
+  swe2:["Robert Schuman 재단","https://www.robert-schuman.eu/en/observatoire/6772"],
+  col1:["Local10 (AP)","https://www.local10.com/news/politics/2026/06/21/trump-backed-abelardo-de-la-espriella-wins-with-4966-of-colombian-votes/"],
+  per1:["Andina","https://andina.pe/agencia/noticia-peru-2026-elections-jne-to-officially-proclaim-secondround-results-at-noon-today-1082109.aspx"],
+  hun1:["PBS NewsHour (AP)","https://www.pbs.org/newshour/world/hungarian-prime-minister-viktor-orban-ousted"],
+  dnk1:["Robert Schuman 재단","https://www.robert-schuman.eu/en/observatoire/6772"],
+  bgd1:["TRT World","https://www.trtworld.com/article/54567ceab4cf"],
+  bgd2:["Dawn","https://www.dawn.com/news/1973136"]
+};
+
+/* ---------- 날짜 계산 ---------- */
+const pad=n=>String(n).padStart(2,"0");
+const P=s=>{const a=s.split("-").map(Number);return new Date(a[0],a[1]-1,a[2]);};
+const T0=(()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate());})();
+const DAY=864e5, WD=["일","월","화","수","목","금","토"];
+const fmt=e=>{const d=P(e.date);return e.approx?d.getFullYear()+"."+pad(d.getMonth()+1)+" (미확정)":d.getFullYear()+"."+pad(d.getMonth()+1)+"."+pad(d.getDate())+" ("+WD[d.getDay()]+")";};
+const diff=e=>Math.round((P(e.date)-T0)/DAY);
+function status(e){
+  const s=P(e.start||e.date), en=P(e.end||e.date);
+  if(T0<s)return "soon";
+  if(T0<=en)return "live";
+  return "done";
+}
+function dday(e){
+  if(e.approx)return "";
+  const n=diff(e);
+  return n>0?"D-"+n:n===0?"D-DAY":"D+"+Math.abs(n);
+}
+const ST={live:"진행 중",soon:"예정",done:"종료"};
+E.forEach(e=>{e.st=status(e);});
+
+/* 예측시장 (돈을 걸어 형성된 가격). 확인한 시점의 값이며 실시간이 아닙니다. */
+const MK={
+ us:[
+  {p:"Kalshi",q:"민주당이 상원을 장악할까?",asof:"10.20",u:"fnn",chip:"민주당 상원 장악 60%대 중반",items:[["민주당 승리",65,"60%대 중반"],["공화당 승리",35,"30%대 중반"]],note:"기사가 대략의 수치만 밝혔습니다"},
+  {p:"Kalshi",q:"의회 구도 (3월 시점, 비교용)",asof:"3.14",u:"nwk1",items:[["민주 양원 장악",50,"50%"],["민주 하원 · 공화 상원",36,"36%"],["공화 양원 장악",15,"15%"],["공화 하원 · 민주 상원",1,"1%"]],note:"합이 100%를 넘는 것은 반올림 때문입니다"}
+ ],
+ nz:[{p:"Polymarket",q:"다음 뉴질랜드 총리는?",asof:"11.4",u:"pred",chip:"힙킨스 총리 57%",items:[["크리스 힙킨스 (노동당)",57,"57%"],["크리스토퍼 룩슨 (국민당)",38,"38%"]],note:"합계 95%, 나머지는 그 밖의 결과입니다"}],
+ vic:[{p:"Kalshi",q:"빅토리아주 총선 승자는?",asof:"11.4",u:"kal",chip:"야당 연합 83%",items:[["자유·국민 연합",83,"83%"],["노동당",23,"23%"],["원네이션",11,"11%"]],note:"세 값의 합이 100%를 넘고 거래량이 적어(약 6천 달러) 참고용입니다"}],
+ cpv:[{p:"Polymarket",q:"네베스 대통령이 당선될까?",asof:"10.28",u:"cpvo",chip:"네베스 당선 86%",items:[["네베스 당선",86,"86%"]]}],
+ esp:[
+  {p:"Polymarket",q:"페이호(국민당)가 다음 총리가 될까?",asof:"10.22",u:"esp2",chip:"페이호 총리 82~83%",items:[["페이호 총리",82,"82%"]]},
+  {p:"Kalshi",q:"페이호(국민당)가 다음 총리가 될까?",asof:"10.27",u:"esp2",items:[["페이호 총리",83,"83%"]]}
+ ]
+};
+/* 쉬운 한 줄 설명 */
+const EASY={
+ us:["민주당이 상원과 하원을 모두 가져갈 것으로 방송사들이 예측하고 있습니다. 개표는 아직 끝나지 않았습니다.","대통령 임기 중간에 치르는 선거라 평가 성격이 강합니다. 의회 다수당이 바뀌면 법안과 예산을 처리하는 주도권이 달라집니다."],
+ nz:["예측시장에서는 노동당 힙킨스가 총리가 될 가능성(57%)이 룩슨 현 총리(38%)보다 높게 매겨져 있습니다.","한 정당이 혼자 과반을 얻기 어려워, NZ First 같은 작은 당이 어느 쪽에 붙는지가 정부를 정합니다."],
+ vic:["12년 집권한 노동당이 밀리고 있습니다. 여론조사와 예측시장 모두 야당 연합이 앞섭니다.","호주 연방 선거가 아니라 빅토리아주(멜버른 일대)의 주 선거입니다."],
+ cpv:["현직 네베스 대통령이 당선될 가능성이 높게 평가됩니다.","과반을 얻는 후보가 없으면 11월 29일 결선을 치릅니다."],
+ esp:["국민당 페이호가 다음 총리가 될 가능성이 82~83%로 평가됩니다.","여론조사에서 국민당과 극우 복스를 합치면 과반을 넘기지만, 국영 CIS 조사만 사회노동당이 앞섭니다."],
+ gmb:["현직 바로 대통령이 3선에 도전합니다. 야당이 여럿으로 갈라진 것이 변수입니다.","확인된 최신 여론조사가 없어 예측이 불확실합니다."]
+};
+/* 관련 기사: [출처 키, 한 줄 설명] */
+const NEWS={
+ us:[["cnn","CNN: 실시간 중계, 의회 승패 속보"],["cbs","CBS: 하원 개표 결과와 출구조사"],["cnbc","CNBC: 실시간 중계, 트럼프 결과 수용 발언"],["nbc","NBC: 개표 현황과 상원 탈환 보도"],["msnow","MS NOW: 민주당이 양원을 가져가는 흐름 분석"],["fnn","Federal News Network: 상원 예측시장 현황 (10.20)"],["nwk1","Newsweek: 예측시장 속 민주당 기대치 (3월)"],["defi","DeFi Rate: 예측시장 확률 모음"],["pollcheck","PollCheck: 일반 투표와 지지율 평균"],["poliwave","Poliwave: 모델 예측"]],
+ nz:[["pred","PredScope: 폴리마켓 총리 시장 현황"],["nzp","Wikipedia: 여론조사 모음"],["odt","ODT: RNZ 조사에서 NZ First 3위"],["spin","The Spinoff: 룩슨과 힙킨스 접전 분석 (3월)"],["itst","interest.co.nz: 총선 일정 발표"],["nzw","Wikipedia: 선거 개요"]],
+ vic:[["kal","Kalshi: 승자 예측시장"],["vicn","The Nightly: 야당 대표 윌슨 우세 보도"],["vicp","빅토리아 의회: 선거 일정"],["vicw","Wikipedia: 선거 개요"]],
+ cpv:[["cpvo","Rio Times: 예측시장 86%"],["cpvp","Rio Times: 선거 준비 현황"],["cpvw","Wikipedia: 선거 개요"]],
+ esp:[["esp1","Rio Times: 여론조사 추적"],["esp2","Rio Times: 예측시장과 좌파 분열"],["esp3","Rio Times: CIS 조사와 민간 조사 비교"],["esp4","ITV: 산체스 조기 총선 발표"]]
+};
+E.forEach(e=>{e.mk=MK[e.id]||null;});
+
+/* ---------- 상태 ---------- */
+const st={fav:false,status:"all",reg:"all",range:"all",q:"",sel:"us",tab:null,proj:"globe",k:1,tx:0,ty:0};
+const $=id=>document.getElementById(id);
+let FAV=new Set();
+try{FAV=new Set(JSON.parse(localStorage.getItem("wem-fav")||"[]"));}catch(err){FAV=new Set();}
+function saveFav(){try{localStorage.setItem("wem-fav",JSON.stringify(Array.from(FAV)));}catch(err){}}
+function toggleFav(id){
+  if(FAV.has(id))FAV.delete(id);else FAV.add(id);
+  saveFav();renderList();renderDetail();
+}
+function go(id){
+  if(id==="fav"){st.fav=!st.fav;refresh();id="secList";}
+  const el=$(id);
+  if(el&&el.scrollIntoView)el.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function mktHtml(e){
+  const g=e.mk;
+  if(!g)return "";
+  return "<div><h3>예측시장 (돈을 걸어 만든 가격)</h3>"+g.map(m=>'<div class="mkt"><div class="mk-h"><span class="plat">'+esc(m.p)+"</span><span>"+esc(m.q)+"</span></div>"+bars(m.items)+'<div class="mk-f"><span>'+esc(m.asof)+" 확인"+(m.note?" · "+esc(m.note):"")+"</span>"+(S[m.u]?'<a href="'+S[m.u][1]+'" target="_blank" rel="noopener noreferrer">출처</a>':"")+"</div></div>").join("")+'<p class="note">가격이 70%면 참일 때 100원을 받는 표가 70원에 거래된다는 뜻입니다. 실제 확률과 다를 수 있고 거래가 적은 시장은 쉽게 흔들립니다.</p></div>';
+}
+function easyHtml(e){
+  const x=EASY[e.id];
+  const head=x?x[0]:e.sum;
+  const why=x?x[1]:"";
+  const m=e.mk&&e.mk[0]&&e.mk[0].chip?'<div class="mchips"><span class="mchip"><b>'+esc(e.mk[0].p)+"</b>"+esc(e.mk[0].chip)+"</span></div>":"";
+  return '<div class="easy"><p class="eh">'+esc(head)+"</p>"+(why?'<p class="ew">'+esc(why)+"</p>":"")+m+"</div>";
+}
+const ORDER={live:0,soon:1,done:2};
+function filtered(){
+  const q=st.q.trim().toLowerCase();
+  return E.filter(e=>{
+    if(st.fav&&!FAV.has(e.id))return false;
+    if(st.status!=="all"&&e.st!==st.status)return false;
+    if(st.reg!=="all"&&e.reg!==st.reg)return false;
+    if(st.range==="d30"&&(e.approx||Math.abs(diff(e))>30))return false;
+    if(st.range==="y26"&&P(e.date).getFullYear()!==2026)return false;
+    if(st.range==="y27"&&P(e.date).getFullYear()!==2027)return false;
+    if(q&&(e.c+" "+e.title+" "+e.type).toLowerCase().indexOf(q)<0)return false;
+    return true;
+  }).sort((a,b)=>{
+    if(a.st!==b.st)return ORDER[a.st]-ORDER[b.st];
+    return a.st==="done"?P(b.date)-P(a.date):P(a.date)-P(b.date);
+  });
+}
+const byId=id=>E.find(e=>e.id===id);
+
+/* ---------- 상단 ---------- */
+function renderCounts(){
+  const n={live:0,soon:0,done:0};E.forEach(e=>n[e.st]++);
+  $("counts").innerHTML=["live","soon","done"].map(k=>'<button class="cnt" data-st="'+k+'" aria-pressed="'+(st.status===k)+'"><i class="dot '+k+'"></i><span>'+ST[k]+'</span><b>'+n[k]+'</b></button>').join("");
+}
+function renderStrip(){
+  const items=E.filter(e=>!e.approx&&diff(e)>=0&&diff(e)<=75&&e.st!=="done").sort((a,b)=>P(a.date)-P(b.date));
+  $("strip").innerHTML=items.length?items.map(e=>'<button class="chip '+e.st+'" data-id="'+e.id+'"><span class="d">'+fmt(e).replace(/^\d{4}\./,"")+'</span><span class="n">'+e.c+'</span><span class="k">'+(e.st==="live"?"진행 중 · ":"")+dday(e)+'</span></button>').join(""):'<span class="empty">75일 안에 예정된 투표가 없습니다.</span>';
+}
+
+/* ---------- 필터와 목록 ---------- */
+function renderFilters(){
+  $("fStatus").innerHTML=[["all","전체"],["live","진행 중"],["soon","예정"],["done","종료"]].map(a=>'<button class="pill" data-st="'+a[0]+'" aria-pressed="'+(st.status===a[0])+'">'+a[1]+'</button>').join("")+'<button class="pill" data-st="fav" aria-pressed="'+st.fav+'">★ 관심</button>';
+  $("fReg").innerHTML=[["all","전 지역"]].concat(Object.keys(REG).map(k=>[k,REG[k]])).map(a=>'<button class="pill" data-reg="'+a[0]+'" aria-pressed="'+(st.reg===a[0])+'">'+a[1]+'</button>').join("");
+}
+function renderList(){
+  const f=filtered();
+  $("list").innerHTML=f.length?f.map(e=>'<button class="item" data-id="'+e.id+'" aria-current="'+(st.sel===e.id)+'"><span class="tag '+e.st+'">'+ST[e.st]+'</span><span class="n">'+(FAV.has(e.id)?"★ ":"")+e.title+'</span><span class="k">'+dday(e)+'</span><span class="s">'+fmt(e)+' · '+e.c+' · '+e.type+'</span></button>').join(""):(st.fav&&!FAV.size?'<p class="empty">관심 등록한 선거가 없습니다. 선거 상세의 ☆ 버튼으로 추가해 보세요.</p>':'<p class="empty">조건에 맞는 선거가 없습니다. 필터를 풀어 보세요.</p>');
+}
+
+/* ---------- 상세 ---------- */
+function esc(s){return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));}
+function bars(list){
+  if(!list||!list.length)return "";
+  const max=Math.max.apply(null,list.map(b=>b[1]));
+  const scale=max>100?max:100;
+  return list.map((b,i)=>'<div class="bar'+(i===0?" lead1":"")+'"><span>'+esc(b[0])+'</span><span class="t"><i style="width:'+Math.min(100,b[1]/scale*100)+'%"></i></span><span class="v">'+esc(b[2])+'</span></div>').join("");
+}
+function stacks(list){
+  if(!list)return "";
+  return list.map(s=>{
+    const tot=s.total;
+    const segs=s.segs.map(g=>'<i class="seg-'+g[2]+'" style="width:'+(g[1]/tot*100)+'%"></i>').join("");
+    const leg=s.segs.map(g=>'<span><i class="dot" style="background:var(--'+(g[2]==="d"?"demo":g[2]==="r"?"rep":"unk")+')"></i> '+esc(g[0])+'</span>').join("");
+    return '<div class="stack"><div class="lbl"><span>'+esc(s.t)+(s.sub?" · "+esc(s.sub):"")+'</span><span class="num">'+tot+'석</span></div><div class="track">'+segs+'<span class="maj" style="left:'+(s.maj/tot*100)+'%" title="과반"></span></div><div class="leg">'+leg+'</div></div>';
+  }).join("");
+}
+function table(rows){
+  if(!rows||!rows.length)return "";
+  return '<div class="tablewrap"><table><thead><tr>'+rows[0].map(h=>"<th>"+esc(h)+"</th>").join("")+"</tr></thead><tbody>"+rows.slice(1).map(r=>"<tr>"+r.map((c,i)=>'<td class="'+(i===0?"w":"num")+'">'+esc(c)+"</td>").join("")+"</tr>").join("")+"</tbody></table></div>";
+}
+function pts(list){return list&&list.length?'<ul class="pts">'+list.map(p=>"<li>"+esc(p)+"</li>").join("")+"</ul>":"";}
+function srcs(keys){
+  if(!keys||!keys.length)return "";
+  return '<div class="src"><span>출처</span>'+keys.map(k=>S[k]?'<a href="'+S[k][1]+'" target="_blank" rel="noopener noreferrer">'+esc(S[k][0])+"</a>":"").join("")+"</div>";
+}
+function senateTable(rows){
+  return '<div class="tablewrap"><table><thead><tr><th>주</th><th>후보</th><th>선거 전 조사</th><th>평가</th><th>결과 (방송사 예측)</th></tr></thead><tbody>'+rows.map(r=>'<tr><td class="w"><b>'+esc(r[0])+'</b></td><td class="w">'+esc(r[1])+'</td><td class="num">'+esc(r[2])+'</td><td>'+esc(r[3])+'</td><td class="w res-'+r[4]+'">'+esc(r[5])+"</td></tr>").join("")+"</tbody></table></div>";
+}
+function tabsFor(e){
+  const t=[["info","개요"]];
+  t.push(["fc","예측"]);t.push(["poll","여론조사"]);t.push(["res","결과"]);t.push(["news","관련 기사"]);
+  return t;
+}
+function defaultTab(e){
+  if(e.st==="done")return e.res?"res":"info";
+  if(e.st==="live")return e.res?"res":"info";
+  return e.poll?"poll":"info";
+}
+function renderDetail(){
+  const e=byId(st.sel);
+  const box=$("detail");
+  if(!e){box.innerHTML='<p class="empty">목록이나 지도에서 선거를 선택하세요.</p>';return;}
+  if(!st.tab)st.tab=defaultTab(e);
+  const tabs=tabsFor(e);
+  const big=e.approx?"":dday(e);
+  const head='<div class="dhead"><div><span class="tag '+e.st+'">'+ST[e.st]+'</span><h2>'+esc(e.title)+'</h2><p>'+esc(e.c)+' · '+esc(e.type)+' · '+esc(REG[e.reg])+'</p></div><div class="big">'+(big||"미정")+'<small>'+fmt(e)+'</small><button class="star" data-fav="'+e.id+'" aria-pressed="'+FAV.has(e.id)+'">'+(FAV.has(e.id)?"★ 관심 해제":"☆ 관심 등록")+'</button></div></div>';
+  const tabbar='<div class="tabs" role="tablist">'+tabs.map(t=>'<button class="tab" role="tab" data-tab="'+t[0]+'" aria-selected="'+(st.tab===t[0])+'">'+t[1]+'</button>').join("")+"</div>";
+  let body="";
+  if(st.tab==="info"){
+    body='<p class="lead">'+esc(e.sum)+'</p><div><h3>기본 정보</h3><dl class="facts">'+e.facts.map(f=>"<dt>"+esc(f[0])+"</dt><dd>"+esc(f[1])+"</dd>").join("")+"</dl></div>"+srcs(e.src);
+  }else if(st.tab==="fc"){
+    const mh=mktHtml(e);
+    if(e.fc||mh){
+      const model=e.fc?"<div><h3>"+(mh?"전문가·모델 예측":"예측")+"</h3>"+bars(e.fc.bars)+stacks(e.fc.stacks)+'<p class="note">'+esc(e.fc.note)+"</p></div>":"";
+      body='<div class="cols">'+mh+model+"</div>"+srcs(e.fc?e.fc.src:null);
+    }else if(e.st==="done"){
+      body='<p class="note">종료된 선거라 예측은 싣지 않았습니다. 결과 탭을 보세요.</p>';
+    }else{
+      body='<p class="note">이 선거의 예측 자료는 아직 수집하지 못했습니다.</p>';
+    }
+  }else if(st.tab==="poll"){
+    if(e.poll){
+      body='<div class="cols"><div><h3>'+esc(e.poll.head)+"</h3>"+bars(e.poll.bars)+pts(e.poll.pts)+"</div>"+(e.poll.rows?"<div><h3>조사기관별 (%)</h3>"+table(e.poll.rows)+"</div>":"")+"</div>"+(e.poll.note?'<p class="note">'+esc(e.poll.note)+"</p>":"")+srcs(e.poll.src);
+    }else if(e.st==="done"){
+      body='<p class="note">종료된 선거라 선거 전 여론조사는 싣지 않았습니다.</p>';
+    }else{
+      body='<p class="note">이 선거의 여론조사 자료는 아직 수집하지 못했습니다.</p>';
+    }
+  }else if(st.tab==="news"){
+    const items=NEWS[e.id]||(e.src||[]).map(k=>[k,""]);
+    const lis=items.filter(n=>S[n[0]]).map(n=>'<li><a href="'+S[n[0]][1]+'" target="_blank" rel="noopener noreferrer"><b>'+esc(S[n[0]][0])+"</b><span>"+esc(n[1]||"원문 보기")+"</span></a></li>").join("");
+    body=lis?'<ul class="news">'+lis+'</ul><p class="note">기사는 외부 사이트에서 열리며 대부분 영어입니다.</p>':'<p class="note">연결된 기사가 없습니다.</p>';
+  }else{
+    if(e.res){
+      const r=e.res;
+      body='<p class="lead"><b>'+esc(r.head)+"</b></p>"+(r.stacks?'<div class="cols"><div>'+stacks(r.stacks.slice(0,2))+"</div><div>"+stacks(r.stacks.slice(2))+"</div></div>":"")+(r.rows?table(r.rows):"")+pts(r.pts)+(r.senate?"<div><h3>상원 격전지</h3>"+senateTable(r.senate)+"</div>":"")+(e.st==="live"?'<p class="note">개표와 확정이 진행 중이라 수치가 바뀔 수 있습니다.</p>':"")+srcs(r.src);
+    }else if(e.st==="done"){
+      body='<p class="note">결과는 아직 정리하지 못했습니다.</p>'+srcs(e.src);
+    }else{
+      body='<p class="note">아직 투표 전이라 결과가 없습니다. 투표일은 '+fmt(e)+"입니다.</p>";
+    }
+  }
+  box.innerHTML=head+easyHtml(e)+tabbar+'<div class="panel">'+body+"</div>";
+}
+
+/* ---------- 지도 ---------- */
+const D3=window.d3;
+let dm=null,proj=null,path=null,svg=null,gM=null,W=0,H=0,base=100,rot=[22,-24];
+const COL={live:"var(--live)",soon:"var(--soon)",done:"var(--done)"};
+function bestByIso(list){
+  const m={};
+  list.forEach(e=>{
+    if(e.marker)return;
+    const cur=m[e.iso];
+    if(!cur||ORDER[e.st]<ORDER[cur.st]||(ORDER[e.st]===ORDER[cur.st]&&Math.abs(diff(e))<Math.abs(diff(cur))))m[e.iso]=e;
+  });
+  return m;
+}
+function buildMap(){
+  const el=$("map"),box=$("mapbox");
+  el.innerHTML="";
+  const globe=st.proj==="globe";
+  box.className=globe?"globe":"";
+  W=el.clientWidth||box.clientWidth||600;
+  H=Math.round(W*(W<560?0.9:0.62));
+  el.style.height=H+"px";
+  if(typeof Datamap==="undefined"||!D3){
+    el.innerHTML='<p class="mapfail">지도 라이브러리를 불러오지 못했습니다. 오른쪽 목록과 아래 상세는 그대로 사용할 수 있습니다.</p>';
+    return;
+  }
+  try{
+    dm=new Datamap({
+      element:el,width:W,height:H,
+      setProjection:function(){
+        let p;
+        if(globe){base=Math.min(W,H)/2-6;p=D3.geo.orthographic().rotate(rot).scale(base*st.k).translate([W/2,H/2]).clipAngle(90).precision(0.5);}
+        else{base=W/6.4;p=D3.geo.equirectangular().scale(base*st.k).translate([W/2+st.tx,H/2+st.ty]).precision(0.5);}
+        proj=p;path=D3.geo.path().projection(p);
+        return {path:path,projection:p};
+      },
+      fills:{defaultFill:"var(--land)"},
+      geographyConfig:{borderWidth:0.5,borderColor:"var(--edge)",highlightOnHover:false,popupOnHover:false}
+    });
+  }catch(err){
+    el.innerHTML='<p class="mapfail">지도를 그리지 못했습니다. 목록과 상세는 그대로 사용할 수 있습니다.</p>';
+    return;
+  }
+  svg=D3.select(el).select("svg");
+  if(globe)svg.insert("path","g").datum({type:"Sphere"}).attr("class","sphere").attr("d",path);
+  gM=svg.append("g").attr("class","markers");
+  svg.selectAll(".datamaps-subunit")
+    .on("click",function(d){const e=bestByIso(filtered())[d.id];if(e)choose(e.id,true);})
+    .on("mousemove",function(d){tip(d3ev(),d);})
+    .on("mouseout",function(){hideTip();});
+  const drag=D3.behavior.drag().on("drag",function(){
+    const ev=D3.event;
+    if(globe){rot[0]+=ev.dx*0.35;rot[1]=Math.max(-80,Math.min(80,rot[1]-ev.dy*0.35));}
+    else{st.tx+=ev.dx;st.ty+=ev.dy;proj.translate([W/2+st.tx,H/2+st.ty]);}
+    redraw();
+  });
+  svg.call(drag);
+  paint();
+}
+function d3ev(){return D3.event;}
+function tip(ev,d){
+  const t=$("tip"),box=$("mapbox").getBoundingClientRect();
+  const e=bestByIso(filtered())[d.id];
+  const name=d.properties&&d.properties.name?d.properties.name:d.id;
+  t.innerHTML=e?"<b>"+esc(e.c)+"</b><br>"+esc(e.title)+" · "+ST[e.st]+(dday(e)?" "+dday(e):""):esc(name)+"<br>표시할 선거 없음";
+  t.style.left=Math.min(box.width-200,Math.max(4,ev.clientX-box.left+12))+"px";
+  t.style.top=Math.max(4,ev.clientY-box.top+12)+"px";
+  t.className="tip on";
+}
+function hideTip(){$("tip").className="tip";}
+function redraw(){
+  if(!proj)return;
+  if(st.proj==="globe"){proj.rotate(rot).scale(base*st.k);}
+  else{proj.scale(base*st.k);}
+  svg.selectAll(".datamaps-subunit").attr("d",path);
+  svg.select(".sphere").attr("d",path);
+  placeMarkers();
+}
+function placeMarkers(){
+  if(!gM)return;
+  const globe=st.proj==="globe";
+  const c=[-rot[0],-rot[1]];
+  gM.selectAll(".mk").each(function(e){
+    const p=proj(e.ll);
+    const vis=p&&(!globe||D3.geo.distance(e.ll,c)<Math.PI/2-0.02);
+    D3.select(this).style("display",vis?null:"none").attr("transform",p?"translate("+p[0]+","+p[1]+")":null);
+  });
+}
+function paint(){
+  if(!svg)return;
+  const list=filtered(),iso=bestByIso(list);
+  const sel=byId(st.sel);
+  svg.selectAll(".datamaps-subunit")
+    .style("fill",function(d){const e=iso[d.id];return e?COL[e.st]:"var(--land)";})
+    .classed("sel",function(d){return !!(sel&&!sel.marker&&sel.iso===d.id);});
+  const data=list.slice().sort((a,b)=>(a.id===st.sel)-(b.id===st.sel));
+  const m=gM.selectAll(".mk").data(data,function(e){return e.id;});
+  m.exit().remove();
+  const en=m.enter().append("g").attr("class","mk").on("click",function(e){choose(e.id,true);})
+    .on("mousemove",function(e){const t=$("tip"),box=$("mapbox").getBoundingClientRect(),ev=D3.event;t.innerHTML="<b>"+esc(e.c)+"</b><br>"+esc(e.title)+" · "+ST[e.st]+(dday(e)?" "+dday(e):"");t.style.left=Math.min(box.width-200,Math.max(4,ev.clientX-box.left+12))+"px";t.style.top=Math.max(4,ev.clientY-box.top+12)+"px";t.className="tip on";})
+    .on("mouseout",hideTip);
+  en.append("circle").attr("class","ring").attr("r",7);
+  en.append("circle").attr("class","core").attr("r",5.5);
+  gM.selectAll(".mk").each(function(e){gM.node().appendChild(this);})
+    .classed("sel",function(e){return e.id===st.sel;});
+  gM.selectAll(".mk").select(".core").style("fill",function(e){return COL[e.st];});
+  gM.selectAll(".mk").select(".ring").style("stroke",function(e){return COL[e.st];}).style("display",function(e){return e.st==="live"?null:"none";});
+  gM.selectAll(".mk").select(".core").attr("r",function(e){return e.id===st.sel?7:5.5;});
+  placeMarkers();
+}
+function focusSel(){
+  const e=byId(st.sel);
+  if(!e||!proj)return;
+  if(st.proj==="globe"){
+    const tgt=[-e.ll[1],Math.max(-70,Math.min(70,-e.ll[0]))];
+    const reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(reduce){rot=tgt;redraw();return;}
+    const i=D3.interpolate(rot,tgt);
+    D3.transition().duration(700).tween("rot",function(){return function(t){rot=i(t);redraw();};});
+  }else{
+    const lam=e.ll[1]*Math.PI/180,phi=e.ll[0]*Math.PI/180;
+    st.tx=-base*st.k*lam;st.ty=base*st.k*phi;
+    proj.translate([W/2+st.tx,H/2+st.ty]);redraw();
+  }
+}
+
+/* ---------- 이벤트 ---------- */
+function choose(id,fromMap){
+  st.sel=id;st.tab=null;
+  try{history.replaceState(null,"","#"+id);}catch(err){}
+  renderList();renderDetail();paint();focusSel();
+  if(fromMap||true){
+    const d=$("detail");
+    if(window.innerWidth<=860||fromMap){ if(d.scrollIntoView)d.scrollIntoView({behavior:"smooth",block:"start"}); }
+  }
+}
+function refresh(){
+  renderCounts();renderFilters();renderList();paint();
+  const nb=document.querySelector('[data-go="fav"]');
+  if(nb)nb.setAttribute("aria-pressed",String(st.fav));
+}
+document.addEventListener("click",function(ev){
+  const t=ev.target.closest("button");
+  if(!t)return;
+  if(t.dataset.fav){toggleFav(t.dataset.fav);return;}
+  if(t.dataset.go){go(t.dataset.go);return;}
+  if(t.classList.contains("cnt")){const k=t.dataset.st;st.status=st.status===k?"all":k;refresh();return;}
+  if(t.classList.contains("pill")&&t.dataset.st==="fav"){st.fav=!st.fav;refresh();return;}
+  if(t.classList.contains("pill")&&t.dataset.st!==undefined){st.status=t.dataset.st;refresh();return;}
+  if(t.classList.contains("pill")&&t.dataset.reg!==undefined){st.reg=t.dataset.reg;refresh();return;}
+  if(t.classList.contains("item")||t.classList.contains("chip")){choose(t.dataset.id,false);return;}
+  if(t.classList.contains("tab")){st.tab=t.dataset.tab;renderDetail();return;}
+  if(t.id==="pGlobe"||t.id==="pFlat"){
+    st.proj=t.id==="pGlobe"?"globe":"flat";st.k=1;st.tx=0;st.ty=0;
+    $("pGlobe").setAttribute("aria-pressed",st.proj==="globe");$("pFlat").setAttribute("aria-pressed",st.proj==="flat");
+    buildMap();focusSel();return;
+  }
+  if(t.id==="zIn"||t.id==="zOut"){
+    const max=st.proj==="globe"?3:6;
+    st.k=Math.max(1,Math.min(max,st.k*(t.id==="zIn"?1.4:1/1.4)));
+    redraw();return;
+  }
+});
+$("q").addEventListener("input",function(ev){st.q=ev.target.value;renderList();paint();});
+$("fRange").addEventListener("change",function(ev){st.range=ev.target.value;renderList();paint();});
+let rz=null;
+window.addEventListener("resize",function(){clearTimeout(rz);rz=setTimeout(function(){if(Math.abs(($("map").clientWidth||0)-W)>4){buildMap();}},200);});
+
+/* ---------- 시작 ---------- */
+const h0=(location.hash||"").slice(1);
+if(h0&&byId(h0))st.sel=h0;
+window.addEventListener("hashchange",function(){const h=(location.hash||"").slice(1);if(byId(h)&&h!==st.sel)choose(h,false);});
+renderCounts();renderStrip();renderFilters();renderList();renderDetail();
+buildMap();
+if(st.sel!=="us")focusSel();
+})();
+</script>
+
+</html>
