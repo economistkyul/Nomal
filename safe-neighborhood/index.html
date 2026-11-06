@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>우리동네 안심 체크</title>
+<meta name="description" content="지역별 신상공개 대상 성범죄자 등록 인원(집계)만 보여주고, 개인 확인은 성범죄자알림e로 연결합니다.">
+<style>
+:root{--bg:#EEF0F2;--card:#fff;--ink:#14202B;--sub:#5A6876;--line:#D9DEE3;--acc:#2F63CC;--acc-soft:#E3EBFA;--bar:#B9C9EA;--warn-bg:#FFF4D6;--warn-ink:#6B4E00;--note-bg:#F4F6F8}
+@media(prefers-color-scheme:dark){:root{--bg:#0D131A;--card:#16202A;--ink:#E7ECF1;--sub:#9AA8B5;--line:#2A3642;--acc:#6F9EF2;--acc-soft:#1E2E48;--bar:#34507F;--warn-bg:#3A2F12;--warn-ink:#F3D98A;--note-bg:#1B2631}}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+header h1{font-size:1.5rem;margin:8px 0 4px}
+header p{margin:0;color:var(--sub);font-size:.95rem}
+.banner{margin:16px 0 0;padding:10px 14px;border-radius:10px;font-size:.88rem}
+.banner.sample{background:var(--warn-bg);color:var(--warn-ink);font-weight:600}
+.banner.real{background:var(--note-bg);color:var(--sub)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:16px}
+.card h2{font-size:1.05rem;margin:0 0 12px}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
+label{display:block;font-size:.8rem;color:var(--sub);margin-bottom:4px}
+select,input[type=search]{width:100%;font:inherit;font-size:1rem;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
+select:disabled{opacity:.5}
+.search{margin-top:10px}
+.big{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.big .num{font-size:2.6rem;font-weight:800;color:var(--acc);line-height:1.1}
+.big .unit{font-size:1.1rem;font-weight:700}
+.place{font-size:.95rem;color:var(--sub);margin-bottom:4px}
+.facts{margin:12px 0 0;padding:0;list-style:none;font-size:.92rem}
+.facts li{padding:6px 0;border-top:1px dashed var(--line)}
+.caution{margin-top:12px;font-size:.82rem;color:var(--sub);background:var(--note-bg);border-radius:10px;padding:10px 12px}
+.bars{list-style:none;margin:0;padding:0}
+.bars li{display:grid;grid-template-columns:7.5em 1fr 3.2em;align-items:center;gap:8px;padding:5px 0;font-size:.9rem;cursor:pointer}
+.bars li .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bars li .track{height:12px;background:var(--note-bg);border-radius:6px;overflow:hidden}
+.bars li .track{display:block}
+.bars li .fill{display:block;height:100%;background:var(--bar);border-radius:6px}
+.bars li .v{text-align:right;font-variant-numeric:tabular-nums}
+.bars li.on .fill{background:var(--acc)}
+.bars li.on .nm,.bars li.on .v{font-weight:700;color:var(--acc)}
+.bars li:hover .nm{text-decoration:underline}
+.more{margin-top:8px;font:inherit;font-size:.85rem;background:none;border:0;color:var(--acc);cursor:pointer;padding:4px 0}
+.btn{display:inline-block;margin-top:4px;padding:11px 16px;border-radius:10px;background:var(--acc);color:#fff;text-decoration:none;font-weight:700}
+.btn.ghost{background:var(--acc-soft);color:var(--acc)}
+.warn{margin-top:12px;padding:10px 12px;border-radius:10px;background:var(--warn-bg);color:var(--warn-ink);font-size:.85rem}
+.card p{margin:0 0 8px}
+.small{font-size:.85rem;color:var(--sub)}
+.help{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.help a{display:block;text-align:center;padding:12px;border-radius:10px;background:var(--acc-soft);color:var(--acc);text-decoration:none;font-weight:700}
+.help a span{display:block;font-weight:400;font-size:.8rem;color:var(--sub)}
+footer{margin-top:24px;font-size:.8rem;color:var(--sub)}
+footer a{color:var(--acc)}
+.filebtn{font:inherit;font-size:.85rem;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
+#csv{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>우리동네 안심 체크</h1>
+  <p>신상공개 대상 성범죄자가 지역에 <b>몇 명</b> 등록돼 있는지 숫자로만 보여 줍니다. 누가, 어디 사는지는 표시하지 않습니다.</p>
+  <div id="banner" class="banner real">데이터를 불러오는 중…</div>
+</header>
+
+<section class="card" aria-labelledby="h-sel">
+  <h2 id="h-sel">지역 선택</h2>
+  <div class="row">
+    <div><label for="sido">시·도</label><select id="sido"></select></div>
+    <div><label for="sgg">시·군·구</label><select id="sgg" disabled></select></div>
+    <div><label for="emd">읍·면·동</label><select id="emd" disabled></select></div>
+  </div>
+  <div class="search">
+    <label for="q">동 이름으로 찾기</label>
+    <input id="q" type="search" list="emdlist" placeholder="예: 가람1동" autocomplete="off">
+    <datalist id="emdlist"></datalist>
+  </div>
+</section>
+
+<section class="card" aria-live="polite">
+  <div class="place" id="place">전국</div>
+  <div class="big"><span class="num" id="num">–</span><span class="unit">명</span></div>
+  <div class="small">신상공개 대상 등록 인원</div>
+  <ul class="facts" id="facts"></ul>
+  <div class="caution">
+    법원이 공개명령을 내린 사람만 집계한 숫자입니다. 많다고 더 위험한 지역이라는 뜻이 아니고(인구 규모·시설 위치 등에 따라 달라짐), 0명이라고 안전이 보장되는 것도 아닙니다.
+  </div>
+</section>
+
+<section class="card" aria-labelledby="h-cmp">
+  <h2 id="h-cmp">비교</h2>
+  <ul class="bars" id="bars"></ul>
+  <button class="more" id="more" hidden>전체 보기</button>
+</section>
+
+<section class="card" aria-labelledby="h-official">
+  <h2 id="h-official">개인별 확인은 공식 창구에서</h2>
+  <p>얼굴·이름·거주지 등 개인 정보는 성평등가족부가 운영하는 <b>성범죄자알림e</b>에서 본인 인증 후 확인할 수 있습니다. 앱(성범죄자알림e)도 있습니다.</p>
+  <a class="btn" href="https://www.sexoffender.go.kr" target="_blank" rel="noopener">성범죄자알림e 열기</a>
+  <div class="warn">
+    알림e에서 확인한 정보를 캡처해 단톡방·카페·SNS에 올리거나 다른 사람에게 보내면 「아동·청소년의 성보호에 관한 법률」 제55조 위반으로 <b>5년 이하 징역 또는 5천만원 이하 벌금</b>(제65조)에 처해질 수 있습니다. 확인은 본인만 하세요.
+  </div>
+</section>
+
+<section class="card" aria-labelledby="h-em">
+  <h2 id="h-em">전자발찌(전자장치) 착용자는?</h2>
+  <p>전자발찌 착용자의 위치와 명단은 법무부 위치추적관제센터만 관리하며 <b>일반에 공개되지 않습니다</b>. 그래서 이 페이지도 주변 착용자 수를 보여 줄 수 없습니다.</p>
+  <p>다만 성범죄자알림e에 공개된 사람은 개인별로 <b>‘전자장치 부착 여부’</b>가 함께 표시됩니다. 전국 전자감독 대상자는 2025년 상반기 기준 약 4,600명으로 보도됐으며(국회 제출 법무부 자료), 연도별 공식 통계는 e-나라지표에서 볼 수 있습니다.</p>
+  <a class="btn ghost" href="https://www.index.go.kr/unify/idx-info.do?idxCd=2810" target="_blank" rel="noopener">e-나라지표: 특정 범죄자 위치추적 현황</a>
+</section>
+
+<section class="card" aria-labelledby="h-help">
+  <h2 id="h-help">도움이 필요할 때</h2>
+  <div class="help">
+    <a href="tel:112">112<span>위급 상황·범죄 신고</span></a>
+    <a href="tel:1366">1366<span>여성긴급전화(24시간)</span></a>
+  </div>
+</section>
+
+<footer>
+  <p id="src"></p>
+  <p>내 통계 파일로 보기: <button class="filebtn" id="filebtn">CSV 불러오기</button><input type="file" id="csv" accept=".csv,text/csv"> <span class="small">(시도·시군구·읍면동·개수 열. 파일은 브라우저 안에서만 처리되고 전송되지 않습니다)</span></p>
+  <p>이 페이지는 개인 신상정보를 수집·저장·표시하지 않습니다. 법률 자문이 아닙니다. · <a href="https://github.com/economistkyul/Nomal/tree/main/safe-neighborhood">소스·기획서</a></p>
+</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+// file:// 로 열었을 때를 위한 내장 예시(가상 지역)
+var EMBEDDED_SAMPLE={meta:{sample:true,source:"예시 데이터 — 가상의 지역명과 임의의 숫자입니다. 실제 통계가 아닙니다."},rows:[
+["가상특별시","가람구","가람1동",3],["가상특별시","가람구","가람2동",1],["가상특별시","가람구","누리동",0],["가상특별시","가람구","다솜동",2],
+["가상특별시","나래구","나래동",4],["가상특별시","나래구","라온동",1],["가상특별시","나래구","마루동",0],["가상특별시","다온구","바다동",2],["가상특별시","다온구","사랑동",5],
+["예시도","샘골시","샘골읍",6],["예시도","샘골시","아라면",1],["예시도","샘골시","자람동",2],["예시도","하늘군","하늘읍",2],["예시도","하늘군","별빛면",0],["예시도","하늘군","푸른면",1]
+].map(function(r){return{sido:r[0],sgg:r[1],emd:r[2],count:r[3]}})};
+
+var $=function(id){return document.getElementById(id)};
+var tree=null, meta=null, showAll=false;
+var fmt=function(n){return Number(n).toLocaleString("ko-KR")};
+var esc=function(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+var sum=function(m){var t=0;m.forEach(function(v){t+=(v instanceof Map)?sum(v):v});return t};
+
+function build(rows){
+  var t=new Map();
+  // 정리: 전국·합계 행 제외, 하위 단위가 있는 상위 합계 행 제외(이중 집계 방지)
+  rows=rows.map(function(r){return{sd:String(r.sido||"").trim(),sg:String(r.sgg||"").trim(),em:String(r.emd||"").trim(),c:Number(String(r.count).replace(/,/g,"").trim())}})
+    .filter(function(r){return r.sd&&!/^(전국|합계|계|총계)$/.test(r.sd)&&String(r.c)!=="NaN"});
+  var hasEmd={}, hasSgg={};
+  rows.forEach(function(r){if(r.em)hasEmd[r.sd+"|"+r.sg]=1; if(r.sg)hasSgg[r.sd]=1});
+  rows=rows.filter(function(r){return!((!r.em&&r.sg&&hasEmd[r.sd+"|"+r.sg])||(!r.sg&&hasSgg[r.sd]))});
+  rows.forEach(function(r){
+    var sd=r.sd, sg=r.sg, em=r.em, c=r.c;
+    if(!isFinite(c))return;
+    if(!sg)sg="(구분 없음)"; if(!em)em="(구분 없음)";
+    if(!t.has(sd))t.set(sd,new Map());
+    var a=t.get(sd); if(!a.has(sg))a.set(sg,new Map());
+    var b=a.get(sg); b.set(em,(b.get(em)||0)+c);
+  });
+  return t;
+}
+var sortKo=function(a,b){return a.localeCompare(b,"ko")};
+
+function fillSelect(sel,keys,placeholder){
+  sel.innerHTML='<option value="">'+esc(placeholder)+'</option>'+keys.map(function(k){return'<option>'+esc(k)+'</option>'}).join("");
+  sel.disabled=!keys.length;
+}
+
+function load(data){
+  meta=data.meta||{}; tree=build(data.rows||[]);
+  var b=$("banner");
+  if(meta.sample){b.className="banner sample";b.textContent="⚠️ 예시 데이터입니다 — 가상의 지역명과 임의의 숫자이며 실제 통계가 아닙니다.";}
+  else{b.className="banner real";b.textContent="기준일 "+(meta.basis_date||"미상")+" · 출처: "+(meta.source||"공공데이터포털");}
+  $("src").textContent="데이터: "+(meta.source||"")+(meta.basis_date?" (기준일 "+meta.basis_date+")":"")+(meta.fetched_at?" · 수집 "+meta.fetched_at:"");
+  fillSelect($("sido"),Array.from(tree.keys()).sort(sortKo),"전국");
+  fillSelect($("sgg"),[],"시·군·구 전체"); fillSelect($("emd"),[],"읍·면·동 전체");
+  var opts=[]; tree.forEach(function(a,sd){a.forEach(function(b,sg){b.forEach(function(_,em){opts.push('<option value="'+esc(em+" ("+sg+", "+sd+")")+'">')})})});
+  $("emdlist").innerHTML=opts.join("");
+  restoreHash(); render();
+}
+
+function sel(){return{sd:$("sido").value,sg:$("sgg").value,em:$("emd").value}}
+
+function render(){
+  var s=sel(), place, n, siblings, parentName, unitName, current;
+  if(s.em){
+    var m=tree.get(s.sd).get(s.sg); n=m.get(s.em); siblings=m; current=s.em;
+    place=s.sd+" "+s.sg+" "+s.em; parentName=s.sg; unitName="읍·면·동";
+  }else if(s.sg){
+    var m2=tree.get(s.sd); n=sum(m2.get(s.sg)); siblings=m2; current=s.sg;
+    place=s.sd+" "+s.sg; parentName=s.sd; unitName="시·군·구";
+  }else if(s.sd){
+    n=sum(tree.get(s.sd)); siblings=tree; current=s.sd;
+    place=s.sd; parentName="전국"; unitName="시·도";
+  }else{
+    n=sum(tree); siblings=null; current=null; place="전국";
+  }
+  $("place").textContent=place; $("num").textContent=fmt(n);
+
+  var facts=[];
+  if(siblings){
+    var vals=[]; siblings.forEach(function(v){vals.push(v instanceof Map?sum(v):v)});
+    var tot=vals.reduce(function(a,b){return a+b},0), avg=tot/vals.length;
+    var rank=vals.filter(function(v){return v>n}).length+1;
+    var cmp=Math.abs(n-avg)<0.5?"비슷한 수준":(n>avg?"평균보다 많음":"평균보다 적음");
+    facts.push(esc(parentName)+" 전체 "+fmt(tot)+"명 중 "+(tot?Math.round(n/tot*1000)/10:0)+"%");
+    facts.push(esc(parentName)+" 안 "+vals.length+"개 "+unitName+" 평균 "+(Math.round(avg*10)/10)+"명 → <b>"+cmp+"</b>");
+    facts.push("많은 순 "+rank+"위 / "+vals.length+"곳");
+  }else{
+    facts.push(tree.size+"개 시·도 합계");
+  }
+  $("facts").innerHTML=facts.map(function(f){return"<li>"+f+"</li>"}).join("");
+
+  // 비교 막대: 선택 지역의 하위 지역들(읍면동 선택 시에는 같은 시군구 안 읍면동들)
+  var list, level;
+  if(s.sg){list=tree.get(s.sd).get(s.sg); level="emd"; current=s.em||null;}
+  else if(s.sd){list=tree.get(s.sd); level="sgg"; current=null;}
+  else{list=tree; level="sido"; current=null;}
+  $("h-cmp").textContent=s.sg?s.sg+" 읍·면·동별":s.sd?s.sd+" 시·군·구별":"시·도별";
+  var items=[]; list.forEach(function(v,k){items.push([k,v instanceof Map?sum(v):v])});
+  items.sort(function(a,b){return b[1]-a[1]||sortKo(a[0],b[0])});
+  var max=Math.max(1,items[0]?items[0][1]:1), LIMIT=15;
+  var shown=showAll?items:items.slice(0,LIMIT);
+  if(current&&!shown.some(function(i){return i[0]===current})){var hit=items.find(function(i){return i[0]===current}); if(hit)shown.push(hit);}
+  $("bars").innerHTML=shown.map(function(i){
+    return'<li data-k="'+esc(i[0])+'" data-l="'+level+'" class="'+(i[0]===current?"on":"")+'"><span class="nm" title="'+esc(i[0])+'">'+esc(i[0])+'</span><span class="track"><span class="fill" style="width:'+(i[1]/max*100)+'%"></span></span><span class="v">'+fmt(i[1])+'명</span></li>';
+  }).join("")||'<li><span class="nm">자료 없음</span></li>';
+  var mb=$("more"); mb.hidden=items.length<=LIMIT; mb.textContent=showAll?"접기":"전체 "+items.length+"곳 보기";
+  writeHash();
+}
+
+function onSido(){var sd=$("sido").value; fillSelect($("sgg"),sd?Array.from(tree.get(sd).keys()).sort(sortKo):[],"시·군·구 전체"); fillSelect($("emd"),[],"읍·면·동 전체"); showAll=false; render();}
+function onSgg(){var s=sel(); fillSelect($("emd"),s.sg?Array.from(tree.get(s.sd).get(s.sg).keys()).sort(sortKo):[],"읍·면·동 전체"); showAll=false; render();}
+function pick(sd,sg,em){
+  $("sido").value=sd||""; onSido();
+  if(sg){$("sgg").value=sg; onSgg();}
+  if(em){$("emd").value=em; render();}
+}
+
+$("sido").addEventListener("change",onSido);
+$("sgg").addEventListener("change",onSgg);
+$("emd").addEventListener("change",function(){showAll=false;render()});
+$("more").addEventListener("click",function(){showAll=!showAll;render()});
+$("bars").addEventListener("click",function(e){
+  var li=e.target.closest("li[data-k]"); if(!li)return; var k=li.getAttribute("data-k"), l=li.getAttribute("data-l"), s=sel();
+  if(l==="sido")pick(k); else if(l==="sgg")pick(s.sd,k); else pick(s.sd,s.sg,k);
+});
+$("q").addEventListener("change",function(){
+  var m=this.value.match(/^(.*) \((.*), (.*)\)$/);
+  if(m&&tree.has(m[3])&&tree.get(m[3]).has(m[2])&&tree.get(m[3]).get(m[2]).has(m[1])){pick(m[3],m[2],m[1]);this.value="";return;}
+  var q=this.value.trim(); if(!q)return; var found=null;
+  tree.forEach(function(a,sd){a.forEach(function(b,sg){b.forEach(function(_,em){if(!found&&em.indexOf(q)>=0)found=[sd,sg,em]})})});
+  if(found){pick(found[0],found[1],found[2]);this.value="";}
+});
+
+function writeHash(){var s=sel(); var h=[s.sd,s.sg,s.em].filter(Boolean).map(encodeURIComponent).join("/"); history.replaceState(null,"",h?"#"+h:location.pathname+location.search);}
+function restoreHash(){
+  var p=location.hash.slice(1).split("/").filter(Boolean).map(function(x){try{return decodeURIComponent(x)}catch(e){return""}});
+  if(!p[0]||!tree.has(p[0]))return; $("sido").value=p[0]; fillSelect($("sgg"),Array.from(tree.get(p[0]).keys()).sort(sortKo),"시·군·구 전체");
+  if(p[1]&&tree.get(p[0]).has(p[1])){$("sgg").value=p[1]; fillSelect($("emd"),Array.from(tree.get(p[0]).get(p[1]).keys()).sort(sortKo),"읍·면·동 전체");
+    if(p[2]&&tree.get(p[0]).get(p[1]).has(p[2]))$("emd").value=p[2];}
+}
+
+// CSV 불러오기 (브라우저 내 처리)
+function parseCSV(text){
+  text=text.replace(/^﻿/,"");
+  var rows=[],row=[],f="",q=false;
+  for(var i=0;i<text.length;i++){var c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=c;}
+    else if(c==='"')q=true; else if(c===","){row.push(f);f=""} else if(c==="\n"){row.push(f);rows.push(row);row=[];f=""} else if(c!=="\r")f+=c;}
+  if(f||row.length){row.push(f);rows.push(row)}
+  return rows.filter(function(r){return r.some(function(x){return x.trim()})});
+}
+function findCol(h,res){for(var j=0;j<res.length;j++){for(var i=0;i<h.length;i++){if(res[j].test(h[i]))return i}}return -1}
+$("filebtn").addEventListener("click",function(){$("csv").click()});
+$("csv").addEventListener("change",function(){
+  var file=this.files[0]; if(!file)return; var rd=new FileReader();
+  rd.onload=function(){
+    var buf=new Uint8Array(rd.result), t;
+    try{t=new TextDecoder("utf-8",{fatal:true}).decode(buf)}catch(e){t=new TextDecoder("euc-kr").decode(buf)} // 공공데이터 CSV는 EUC-KR인 경우가 많음
+    var rows=parseCSV(t); if(rows.length<2){alert("CSV 내용을 읽지 못했습니다.");return}
+    var h=rows[0].map(function(x){return x.trim()});
+    var ci={sido:findCol(h,[/^시도/,/시[·.]?도/,/sido|ctpv/i]),sgg:findCol(h,[/시군구|구군|시[·.]?군[·.]?구/,/sgg|signgu|gugun/i]),emd:findCol(h,[/읍면동|읍[·.]?면[·.]?동/,/emd|dong/i]),count:findCol(h,[/개수|인원|건수/,/count|cnt/i,/수$/])};
+    if(ci.sido<0||ci.count<0){alert("시도·개수 열을 찾지 못했습니다. 첫 줄에 '시도, 시군구, 읍면동, 개수' 같은 열 이름이 필요합니다.");return}
+    var data=rows.slice(1).map(function(r){return{sido:r[ci.sido],sgg:ci.sgg>=0?r[ci.sgg]:"",emd:ci.emd>=0?r[ci.emd]:"",count:r[ci.count]}});
+    load({meta:{sample:false,source:"직접 불러온 파일: "+file.name,basis_date:null},rows:data});
+  };
+  rd.readAsArrayBuffer(file);
+  this.value="";
+});
+
+function get(u){return fetch(u,{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.json()})}
+get("data/counts.json").catch(function(){return get("data/sample.json")}).catch(function(){return EMBEDDED_SAMPLE}).then(load);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "sample": true,
+    "source": "예시 데이터 — 가상의 지역명과 임의의 숫자입니다. 실제 통계가 아닙니다.",
+    "basis_date": null,
+    "fetched_at": null
+  },
+  "rows": [
+    {"sido": "가상특별시", "sgg": "가람구", "emd": "가람1동", "count": 3},
+    {"sido": "가상특별시", "sgg": "가람구", "emd": "가람2동", "count": 1},
+    {"sido": "가상특별시", "sgg": "가람구", "emd": "누리동", "count": 0},
+    {"sido": "가상특별시", "sgg": "가람구", "emd": "다솜동", "count": 2},
+    {"sido": "가상특별시", "sgg": "나래구", "emd": "나래동", "count": 4},
+    {"sido": "가상특별시", "sgg": "나래구", "emd": "라온동", "count": 1},
+    {"sido": "가상특별시", "sgg": "나래구", "emd": "마루동", "count": 0},
+    {"sido": "가상특별시", "sgg": "다온구", "emd": "바다동", "count": 2},
+    {"sido": "가상특별시", "sgg": "다온구", "emd": "사랑동", "count": 5},
+    {"sido": "예시도", "sgg": "샘골시", "emd": "샘골읍", "count": 6},
+    {"sido": "예시도", "sgg": "샘골시", "emd": "아라면", "count": 1},
+    {"sido": "예시도", "sgg": "샘골시", "emd": "자람동", "count": 2},
+    {"sido": "예시도", "sgg": "하늘군", "emd": "하늘읍", "count": 2},
+    {"sido": "예시도", "sgg": "하늘군", "emd": "별빛면", "count": 0},
+    {"sido": "예시도", "sgg": "하늘군", "emd": "푸른면", "count": 1}
+  ]
+}
