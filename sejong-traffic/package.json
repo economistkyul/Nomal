@@ -1,0 +1,6 @@
+{
+  "name": "sejong-traffic",
+  "private": true,
+  "description": "지금 세종 교통 — 세종 도로 혼잡을 색으로 보는 지도 (1단계 시제품)",
+  "engines": { "node": ">=18" }
+}

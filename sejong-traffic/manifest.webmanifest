@@ -1,0 +1,9 @@
+{
+  "name": "지금 세종 교통",
+  "short_name": "세종 교통",
+  "start_url": "/#sejong",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "lang": "ko"
+}
