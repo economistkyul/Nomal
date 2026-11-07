@@ -216,7 +216,7 @@ details.fold summary{cursor:pointer;font-weight:700;padding:4px 0}
 
 <div class="app">
   <header class="band">
-    <div class="brand"><h1>세계 선거 지도</h1><span class="asof">자료 수집 2026.11.07 · 상태와 D-day는 열어 본 날짜 기준으로 계산됩니다</span></div>
+    <div class="brand"><h1>세계 선거 지도</h1><span class="asof">자료 수집 2026.11.08 · 상태와 D-day는 열어 본 날짜 기준으로 계산됩니다</span></div>
     <div class="tickrow"><span class="onair">속보</span><div class="tickwrap"><div class="tick" id="tick"></div></div></div>
   </header>
 
@@ -301,11 +301,13 @@ const E=[
  src:["cnn","cbs","cnbc","nbc","msnow","pollcheck","poliwave"]},
 
 {id:"nz",c:"뉴질랜드",iso:"NZL",reg:"oceania",type:"총선",title:"뉴질랜드 총선",date:"2026-11-07",start:"2026-10-26",end:"2026-11-27",ll:[-41.3,174.8],
- sum:"국민당, ACT, NZ First 연립을 이끄는 룩슨 총리가 재선에 도전합니다. 사전투표는 10월 26일에 시작했고 본투표는 11월 7일 토요일입니다.",
- facts:[["본투표","2026.11.07 (토) 현지 오전 9시~오후 7시"],["의석","120석, 정당명부 혼합비례 (MMP)"],["사전투표","10.26 시작"],["잠정 결과","투표 마감 후 순차 공개"],["공식 확정","11.27"],["현 총리","크리스토퍼 룩슨 (국민당)"]],
+ sum:"11월 7일 투표가 끝났습니다. 잠정 개표에서 노동당이 득표율 29.36%로 근소하게 앞섰지만, 의석은 국민당·ACT·NZ First 연정이 67석으로 과반(66석)을 한 석 넘겼습니다. 양측 모두 승리를 선언하지 않았고 특별투표 개표 뒤 달라질 수 있습니다.",
+ facts:[["본투표","2026.11.07 (토) 현지 오전 9시~오후 7시"],["의석","120석, 정당명부 혼합비례 (MMP)"],["사전투표","10.26 시작"],["잠정 결과","선거 당일 개표 기준 (특별투표 약 39.9만 표 미반영)"],["공식 확정","11.27"],["현 총리","크리스토퍼 룩슨 (국민당)"]],
  fc:{note:"공개된 정량 예측 모델은 확인하지 못했습니다. 노동당과 국민당 양강 구도에 NZ First가 3위로 올라선 접전으로 보도됩니다.",bars:[],src:["nzw"]},
  poll:{head:"최근 여론 흐름",pts:["마지막 1News–Verian 조사(10.29~11.2, 표본 1,006명): 국민당 30, 노동당 29, 녹색당 16, ACT 10, NZ First 8, Opportunity 6%. 오차범위 약 ±3.1%p이고 부동층은 9%입니다.","의석 추정은 국민당·ACT·NZ First 58석(1주 전 61석), 노동·녹색·마오리당 56~60석, Opportunity 7석으로 Opportunity가 연정 열쇠를 쥘 수 있습니다. 선호 총리는 룩슨 23%, 힙킨스 19%입니다.","RNZ–Reid Research 최신 조사에서 NZ First가 3위로 올랐고, 이 조사 시리즈에서 8년 넘게 가장 높은 결과입니다 (RNZ, ODT 보도).","같은 조사에서 노동당도 지지가 올랐습니다.","8월 Taxpayers' Union–Curia 조사에서는 집권 연정이 근소한 과반을 유지했습니다 (Xinhua).","3월에는 집권 국민당 지지가 급락해 룩슨 총리 사퇴 압박이 있었으나 총리는 거부했습니다."],src:["n1v","nzp","odt"]},
- src:["nzw","nzp","odt","n1v"]},
+ res:{head:"잠정: 득표율은 노동당, 의석은 중도우파 연정이 근소 우위",rows:[["정당","득표율","의석"],["노동당","29.36%","36"],["국민당","29.21%","42"],["녹색당","13.30%","16"],["ACT","10.92%","13"],["NZ First","9.78%","12"],["Opportunity","5.96%","7"],["테 파티 마오리","0.57%","5"]],
+  pts:["선거 당일 보통 투표 2,432,403표 기준 잠정 결과이며, 특별투표 약 39.9만 표가 아직 반영되지 않았습니다 (선거관리위원회).","의석은 총 131석으로 초과의석 11석이 포함됩니다. 국민당·ACT·NZ First 67석으로 과반(66석)보다 한 석 많습니다 (Newsweek).","노동당과 국민당의 득표 차는 약 3,650표입니다. 룩슨 총리는 승리를 선언하지 않고 '정부 구성의 길이 있다'고 말했고, 힙킨스 대표는 결과 판단에 시간이 걸릴 수 있다고 했습니다.","공식 결과는 11월 27일 발표 예정이며 그때까지 현 정부가 관리 정부로 남습니다."],src:["nzel","nwk2"]},
+ src:["nzw","nzp","odt","n1v","nzel","nwk2"]},
 
 {id:"vic",c:"호주 빅토리아주",iso:"AUS",marker:true,reg:"oceania",type:"주 총선",title:"빅토리아주 총선",date:"2026-11-28",start:"2026-11-18",end:"2026-12-19",ll:[-37.8,145],
  sum:"노동당이 12년째 집권 중인 주 선거입니다. 7월에 주총리가 바뀐 뒤에도 여론조사에서는 야당 연합이 앞서 있습니다.",
@@ -455,6 +457,8 @@ const E=[
 
 /* 출처 링크 */
 const S={
+  nzel:["뉴질랜드 선거관리위원회 잠정 결과","https://elections.nz/media-and-news/2026/2026-general-election-preliminary-results"],
+  nwk2:["Newsweek 뉴질랜드 총선 초접전","https://www.newsweek.com/new-zealand-election-too-close-to-call-as-center-right-bloc-holds-edge-12681582"],
   cnn:["CNN","https://www.cnn.com/2026/11/04/politics/live-news/midterm-election-congress"],
   cbs:["CBS News","https://www.cbsnews.com/live-updates/house-election-results-2026/"],
   cnbc:["CNBC","https://www.cnbc.com/2026/11/03/midterm-elections-2026-live-updates.html"],
@@ -547,7 +551,7 @@ const MK={
   {p:"Kalshi",q:"민주당이 상원을 장악할까?",asof:"10.20",u:"fnn",chip:"민주당 상원 장악 60%대 중반",items:[["민주당 승리",65,"60%대 중반"],["공화당 승리",35,"30%대 중반"]],note:"기사가 대략의 수치만 밝혔습니다"},
   {p:"Kalshi",q:"의회 구도 (3월 시점, 비교용)",asof:"3.14",u:"nwk1",items:[["민주 양원 장악",50,"50%"],["민주 하원 · 공화 상원",36,"36%"],["공화 양원 장악",15,"15%"],["공화 하원 · 민주 상원",1,"1%"]],note:"합이 100%를 넘는 것은 반올림 때문입니다"}
  ],
- nz:[{p:"Polymarket",q:"다음 뉴질랜드 총리는?",asof:"11.4",u:"pred",chip:"힙킨스 총리 57%",items:[["크리스 힙킨스 (노동당)",57,"57%"],["크리스토퍼 룩슨 (국민당)",38,"38%"]],note:"합계 95%, 나머지는 그 밖의 결과입니다"}],
+ nz:[{p:"Polymarket",q:"다음 뉴질랜드 총리는?",asof:"11.4",u:"pred",chip:"힙킨스 총리 57% (투표 전 가격)",items:[["크리스 힙킨스 (노동당)",57,"57%"],["크리스토퍼 룩슨 (국민당)",38,"38%"]],note:"합계 95%, 나머지는 그 밖의 결과입니다"}],
  vic:[{p:"Kalshi",q:"빅토리아주 총선 승자는?",asof:"11.4",u:"kal",chip:"야당 연합 83%",items:[["자유·국민 연합",83,"83%"],["노동당",23,"23%"],["원네이션",11,"11%"]],note:"세 값의 합이 100%를 넘고 거래량이 적어(약 6천 달러) 참고용입니다"}],
  cpv:[{p:"Polymarket",q:"네베스 대통령이 당선될까?",asof:"10.28",u:"cpvo",chip:"네베스 당선 86%",items:[["네베스 당선",86,"86%"]]}],
  esp:[
@@ -567,7 +571,7 @@ const EASY={
 /* 관련 기사: [출처 키, 한 줄 설명] */
 const NEWS={
  us:[["cnn","CNN: 실시간 중계, 의회 승패 속보"],["cbs","CBS: 하원 개표 결과와 출구조사"],["cnbc","CNBC: 실시간 중계, 트럼프 결과 수용 발언"],["nbc","NBC: 개표 현황과 상원 탈환 보도"],["msnow","MS NOW: 민주당이 양원을 가져가는 흐름 분석"],["fnn","Federal News Network: 상원 예측시장 현황 (10.20)"],["nwk1","Newsweek: 예측시장 속 민주당 기대치 (3월)"],["nwk2","Newsweek: 민주당 양원 승리와 알래스카 상원 접전 (11.4)"],["akp","Alaska Public Media: 알래스카 개표 현황 (11.4)"],["rsn","Reason: 펠톨라 근소 우세, 개표 약 3/4 (11.6)"],["defi","DeFi Rate: 예측시장 확률 모음"],["pollcheck","PollCheck: 일반 투표와 지지율 평균"],["poliwave","Poliwave: 모델 예측"]],
- nz:[["pred","PredScope: 폴리마켓 총리 시장 현황"],["n1v","1News: 마지막 여론조사, 접전 (11.3)"],["nzp","Wikipedia: 여론조사 모음"],["odt","ODT: RNZ 조사에서 NZ First 3위"],["spin","The Spinoff: 룩슨과 힙킨스 접전 분석 (3월)"],["itst","interest.co.nz: 총선 일정 발표"],["nzw","Wikipedia: 선거 개요"]],
+ nz:[["nzel","선거관리위원회: 잠정 결과 (11.7)"],["nwk2","Newsweek: 중도우파 67석, 초접전"],["pred","PredScope: 폴리마켓 총리 시장 현황"],["n1v","1News: 마지막 여론조사, 접전 (11.3)"],["nzp","Wikipedia: 여론조사 모음"],["odt","ODT: RNZ 조사에서 NZ First 3위"],["spin","The Spinoff: 룩슨과 힙킨스 접전 분석 (3월)"],["itst","interest.co.nz: 총선 일정 발표"],["nzw","Wikipedia: 선거 개요"]],
  vic:[["kal","Kalshi: 승자 예측시장"],["vicn","The Nightly: 야당 대표 윌슨 우세 보도"],["vicp","빅토리아 의회: 선거 일정"],["vicw","Wikipedia: 선거 개요"]],
  cpv:[["afn","Africanews: 선거운동 시작, 후보 6명 (11.1)"],["cpvo","Rio Times: 예측시장 86%"],["cpvp","Rio Times: 선거 준비 현황"],["cpvw","Wikipedia: 선거 개요"]],
  esp:[["esp5","Rio Times: Sondaxe 조사와 예측시장 84% (11.1)"],["esp1","Rio Times: 여론조사 추적"],["esp2","Rio Times: 예측시장과 좌파 분열"],["esp3","Rio Times: CIS 조사와 민간 조사 비교"],["esp4","ITV: 산체스 조기 총선 발표"]]
@@ -586,7 +590,7 @@ const reduce=!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: r
 const REGC={all:[25,-20],asia:[30,100],europe:[50,15],africa:[5,20],americas:[10,-80],oceania:[-25,150],mideast:[28,45]};
 
 /* 결과의 믿을 만한 정도 */
-const CF={us:["proj","방송사 예측 · 개표 중"],isr:["prelim","잠정 개표"],swe:["prelim","잠정 개표"],srb:["prelim","잠정 · 패배 인정"],bra:["final","확정 · 불복 주장"],zmb:["final","확정 · 이의 제기"]};
+const CF={nz:["prelim","잠정 개표 · 특별투표 미반영"],us:["proj","방송사 예측 · 개표 중"],isr:["prelim","잠정 개표"],swe:["prelim","잠정 개표"],srb:["prelim","잠정 · 패배 인정"],bra:["final","확정 · 불복 주장"],zmb:["final","확정 · 이의 제기"]};
 function conf(e){
   if(CF[e.id])return CF[e.id];
   if(e.st==="done")return e.res?["final","결과 확정"]:["none","결과 미수록"];
