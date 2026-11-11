@@ -38,6 +38,16 @@ test('주간소식지: 인플루엔자·코로나·급성호흡기·장관·수�
   assert.match(r.notes['ari-hosp'], /^4주 원인: 인플루엔자 27.6%/);
 });
 
+test('주간소식지: 실제 HTML(&rarr; 화살표)', () => {
+  const html = '<div class="view">2026년 감염병 표본감시 주간소식지 44주차<br>1. 인플루엔자 환자감시 - 의원급 의료기관의 외래환자 1,000명당 인플루엔자 의사환자(ILI) 수는 22.8명으로, 최근 3주간 증가 ※ 최근 4주간 의사환자분율 추이: (41주) 21.6명 &rarr; (42주) 17.7명 &rarr; (43주) 19.2명 &rarr; (44주) 22.8명 - 병원급 의료기관의 입원환자 수는 461명으로, 전주 대비 증가 ※ 최근 4주간 입원환자 추이: (41주) 406명 &rarr; (42주) 441명 &rarr; (43주) 389명 &rarr; (44주) 461명<br>2. 코로나19 환자감시 - 병원급 의료기관의 입원환자 수는 174명으로 ※ 최근 4주간 입원환자 추이: (41주) 230명 &rarr; (42주) 221명 &rarr; (43주) 208명 &rarr; (44주) 174명<br>4. 중증급성호흡기감염증 상급종합병원급 입원환자 감시 - 중증급성호흡기감염증 입원환자 수 262명으로 전주(256명) 대비 증가</div>';
+  const r = parseWeeklyBulletin(htmlToText(html));
+  assert.equal(r.dataWeek, '2026-44');
+  assert.deepEqual(r.points['flu-ili-all'].map(p => p[1]), [21.6, 17.7, 19.2, 22.8]);
+  assert.deepEqual(r.points['flu-hosp'].at(-1), ['2026-44', 461]);
+  assert.deepEqual(r.points['covid-hosp'].at(-1), ['2026-44', 174]);
+  assert.deepEqual(r.points['sari-hosp'], [['2026-44', 262], ['2026-43', 256]]);
+});
+
 test('주간소식지: 연초 소식지의 전년 주차', () => {
   const r = parseWeeklyBulletin('2026년 감염병 표본감시 주간소식지 1주차 1. 인플루엔자 환자감시 - ※ 최근 4주간 의사환자분율 추이: (50주) 48.4명 → (51주) 39.1명 → (52주) 37.5명 → (1주) 36.4명 2. 코로나19 환자감시');
   assert.deepEqual(r.points['flu-ili-all'][0], ['2025-50', 48.4]);
@@ -71,5 +81,10 @@ test('목록에서 글번호 찾기', () => {
   const press = findFluPress('<a href="/bbs/kdca/42/313376/artclView.do?layout=unknown" title="x"><strong>인플루엔자 발생 다시 증가!</strong></a><a href="/bbs/kdca/42/313385/artclView.do">성인 비만율</a>');
   assert.equal(press.length, 1);
   assert.equal(press[0].url, 'https://www.kdca.go.kr/bbs/kdca/42/313376/artclView.do?layout=unknown');
+  // 질병청 목록의 실제 링크 형식
+  const real = findFluPress(`<a href="javascript:jf_viewArtcl('kdca', '42', '313376')">\n\t\t<strong>인플루엔자 발생 다시 증가! 어린이‧어르신 예방접종 서두르고(11.6.금)</strong>\n<span class="new">새글</span></a><a href="javascript:jf_viewArtcl('kdca', '42', '313385')"><strong>성인 비만율</strong></a>`);
+  assert.equal(real.length, 1);
+  assert.equal(real[0].url, 'https://www.kdca.go.kr/bbs/kdca/42/313376/artclView.do');
+  assert.equal(real[0].id, 313376);
   assert.equal(htmlToText('<p>A&nbsp;&amp;B</p><script>x</script>').trim(), 'A &B');
 });

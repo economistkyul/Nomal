@@ -10,6 +10,8 @@ export function htmlToText(html) {
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
     .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(+n))
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
+    .replace(/&rarr;/g, '→').replace(/&middot;/g, '·').replace(/&[a-z]+;/gi, ' ')
     .replace(/[ \t\r\f\v]+/g, ' ')
     .replace(/\n\s+/g, '\n');
 }
@@ -57,14 +59,14 @@ export function parseWeeklyBulletin(text) {
   // 1. 인플루엔자
   const flu = section(t, /1\.\s*인플루엔자\s*환자감시/, /2\.\s*코로나19/);
   let m;
-  if ((m = flu.match(/의사환자분율\s*추이\s*:\s*((?:\(\d+주\)\s*[\d.]+명\s*→?\s*)+)/))) putTrend('flu-ili-all', m[1]);
-  if ((m = flu.match(/병원급\s*의료기관의\s*입원환자\s*수는[^※]*※\s*최근\s*4주간\s*입원환자\s*추이\s*:\s*((?:\(\d+주\)\s*[\d,]+명\s*→?\s*)+)/))) putTrend('flu-hosp', m[1]);
-  if ((m = flu.match(/인플루엔자\s*바이러스\s*검출률은[^※]*※\s*최근\s*4주간\s*검출률\s*추이\s*:\s*((?:\(\d+주\)\s*[\d.]+%\s*→?\s*)+)/))) putTrend('flu-pos', m[1]);
+  if ((m = flu.match(/의사환자분율\s*추이\s*:\s*((?:\(\d+주\)\s*[\d.,]+명[^(※\d]{0,12})+)/))) putTrend('flu-ili-all', m[1]);
+  if ((m = flu.match(/병원급\s*의료기관의\s*입원환자\s*수는[^※]*※\s*최근\s*4주간\s*입원환자\s*추이\s*:\s*((?:\(\d+주\)\s*[\d.,]+명[^(※\d]{0,12})+)/))) putTrend('flu-hosp', m[1]);
+  if ((m = flu.match(/인플루엔자\s*바이러스\s*검출률은[^※]*※\s*최근\s*4주간\s*검출률\s*추이\s*:\s*((?:\(\d+주\)\s*[\d.]+%[^(※\d]{0,12})+)/))) putTrend('flu-pos', m[1]);
 
   // 2. 코로나19
   const cov = section(t, /2\.\s*코로나19\s*환자감시/, /3\.\s*급성호흡기감염증/);
-  if ((m = cov.match(/병원급\s*의료기관의\s*입원환자\s*수는[^※]*※\s*최근\s*4주간\s*입원환자\s*추이\s*:\s*((?:\(\d+주\)\s*[\d,]+명\s*→?\s*)+)/))) putTrend('covid-hosp', m[1]);
-  if ((m = cov.match(/코로나19\s*바이러스\s*검출률은\s*([\d.]+)%[^※]*※\s*최근\s*4주간\s*검출률\s*추이\s*:\s*((?:\(\d+주\)\s*[\d.]+%\s*→?\s*)+)/))) putTrend('covid-pos', m[2]);
+  if ((m = cov.match(/병원급\s*의료기관의\s*입원환자\s*수는[^※]*※\s*최근\s*4주간\s*입원환자\s*추이\s*:\s*((?:\(\d+주\)\s*[\d.,]+명[^(※\d]{0,12})+)/))) putTrend('covid-hosp', m[1]);
+  if ((m = cov.match(/코로나19\s*바이러스\s*검출률은\s*([\d.]+)%[^※]*※\s*최근\s*4주간\s*검출률\s*추이\s*:\s*((?:\(\d+주\)\s*[\d.]+%[^(※\d]{0,12})+)/))) putTrend('covid-pos', m[2]);
 
   // 자료 주차를 먼저 확정(이하 '이번 주/전주' 값에 쓰임)
   if (!W) W = RW - 1 > 0 ? RW - 1 : RW;
@@ -119,7 +121,7 @@ export function parseWeeklyBulletin(text) {
 export function parseFluPress(text, year) {
   const t = text.replace(/\s+/g, ' ');
   const P = {};
-  const tr = t.match(/최근\s*4주\s*ILI\s*분율\)?\s*((?:\d{1,2}주\s*[\d.]+명\s*→?\s*)+)/);
+  const tr = t.match(/최근\s*4주\s*ILI\s*분율\)?\s*((?:\d{1,2}주\s*[\d.]+명[^\d]{0,12})+)/);
   if (!tr) return { points: P };
   const pairs = [...tr[1].matchAll(/(\d{1,2})주\s*([\d.]+)명/g)].map(x => [+x[1], +x[2]]);
   const W = Math.max(...pairs.map(p => p[0]));
@@ -175,11 +177,13 @@ export function findBulletinDocs(html) {
 /** 질병청 보도자료 목록에서 인플루엔자 글 링크 찾기 */
 export function findFluPress(html, base = 'https://www.kdca.go.kr') {
   const out = [];
-  const re = /href="([^"]*\/bbs\/kdca\/4[12]\/(\d+)\/artclView\.do[^"]*)"[^>]*>([\s\S]{0,300}?)<\/a>/g;
+  const re = /href="(?:([^"]*\/bbs\/kdca\/(4[12])\/(\d+)\/artclView\.do[^"]*)|javascript:jf_viewArtcl\(\s*'kdca'\s*,\s*'(4[12])'\s*,\s*'(\d+)'\s*\))"[^>]*>([\s\S]{0,1500}?)<\/a>/g;
   let m;
   while ((m = re.exec(html))) {
-    const title = m[3].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
-    if (/인플루엔자|독감/.test(title)) out.push({ url: new URL(m[1].replace(/&amp;/g, '&'), base).href, id: +m[2], title: title.trim() });
+    const title = m[6].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+    if (!/인플루엔자|독감/.test(title)) continue;
+    const url = m[1] ? new URL(m[1].replace(/&amp;/g, '&'), base).href : `${base}/bbs/kdca/${m[4]}/${m[5]}/artclView.do`;
+    out.push({ url, id: +(m[3] || m[5]), title: title.replace(/새글/, '').trim() });
   }
   return out.sort((a, b) => b.id - a.id);
 }
