@@ -118,6 +118,8 @@ async function bulletin(data, status) {
         console.log('[debug] doc', d.docNo, 'listWeek', d.week, 'report', r.reportWeek, 'data', r.dataWeek);
         for (const m of t.matchAll(/(\d{4})년(?:도)?\s*감염병\s*표본감시\s*주간소식지\s*(\d+)\s*주차/g)) console.log('[debug]   title@', m.index, m[0]);
         const k = t.search(/1\.\s*인플루엔자\s*환자감시/); console.log('[debug]   flu@', k, JSON.stringify(t.slice(k, k + 260)));
+        const a3 = t.search(/3\.\s*급성호흡기감염증/); console.log('[debug]   ari@', a3, JSON.stringify(t.slice(a3, a3 + 700)));
+        const a5 = t.search(/5\.\s*장관감염증/); console.log('[debug]   ent@', a5, JSON.stringify(t.slice(a5, a5 + 400)));
       }
       for (const [id, pts] of Object.entries(r.points)) changed += upsert(data, id, pts, { source: BULLETIN_SRC, sourceUrl: url });
       for (const [id, note] of Object.entries(r.notes)) { const s = data.series.find(x => x.id === id); if (s) s.note = note; }
