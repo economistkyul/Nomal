@@ -1,6 +1,6 @@
 {
  "_readme": "GitHub Actions가 매일 scripts/update.mjs로 자동 갱신합니다. 손으로 고칠 때는 points에 [\"연도-주차\", 값]을 추가하세요.",
- "updated": "2026-11-10",
+ "updated": "2026-11-11",
  "latestWeek": "2026-44",
  "diseases": [
   {
@@ -75,8 +75,8 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "threshold": 12.9,
-   "source": "질병청 의원급 인플루엔자 표본감시",
-   "sourceUrl": "https://www.kdca.go.kr/bbs/kdca/42/310702/download.do",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
    "points": [
     [
      "2026-32",
@@ -97,6 +97,10 @@
     [
      "2026-36",
      25.3
+    ],
+    [
+     "2026-39",
+     33
     ],
     [
      "2026-40",
@@ -339,8 +343,8 @@
    "metric": "독감 입원환자 수",
    "unit": "명/주(223곳)",
    "note": "44주 입원환자 중 65세 이상 64.9% · 인플루엔자 양성 사망 신고 21건(전년 동기 4건)",
-   "source": "질병청 병원급 인플루엔자 입원환자 표본감시",
-   "sourceUrl": "https://www.kdca.go.kr/bbs/kdca/42/310702/download.do",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
    "points": [
     [
      "2026-33",
@@ -357,6 +361,14 @@
     [
      "2026-36",
      300
+    ],
+    [
+     "2026-39",
+     402
+    ],
+    [
+     "2026-40",
+     456
     ],
     [
      "2026-41",
@@ -386,8 +398,8 @@
    "metric": "독감 바이러스 검출률",
    "unit": "%",
    "note": "44주 우세 아형 A(H1N1)pdm09 (29.8%)",
-   "source": "질병청 의원급 인플루엔자 병원체 감시",
-   "sourceUrl": "https://www.kdca.go.kr/bbs/kdca/42/310702/download.do",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
    "points": [
     [
      "2026-32",
@@ -404,6 +416,14 @@
     [
      "2026-35",
      12.3
+    ],
+    [
+     "2026-39",
+     26.3
+    ],
+    [
+     "2026-40",
+     28
     ],
     [
      "2026-41",
@@ -432,9 +452,21 @@
    "kind": "official",
    "metric": "코로나19 입원환자 수",
    "unit": "명/주",
-   "source": "질병청 감염병 표본감시 주간소식지 44주(와이드경제 보도)",
-   "sourceUrl": "https://www.widedaily.com/news/articleView.html?idxno=302993",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
    "points": [
+    [
+     "2026-39",
+     248
+    ],
+    [
+     "2026-40",
+     291
+    ],
+    [
+     "2026-41",
+     241
+    ],
     [
      "2026-43",
      208
@@ -477,17 +509,21 @@
    "kind": "official",
    "metric": "수족구병 의사환자 분율",
    "unit": "명/외래 1,000명",
-   "source": "질병청 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com/seoul/dobong/infection-watch",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
    "note": "42주 값은 증감률로 역산",
    "points": [
     [
+     "2026-39",
+     9.4
+    ],
+    [
      "2026-40",
-     12.7
+     8.5
     ],
     [
      "2026-41",
-     12.4
+     6.2
     ],
     [
      "2026-42",
@@ -653,7 +689,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/seoul/dobong/infection-watch/influenza",
    "note": "43주 값은 공개된 전주 대비 증감률로 역산",
    "points": [
     [
@@ -688,7 +724,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/busan/haeundae/infection-watch/influenza",
    "note": "43주 값은 공개된 전주 대비 증감률로 역산",
    "points": [
     [
@@ -723,7 +759,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/daegu/dalseogu/infection-watch/influenza",
    "note": "43주 값은 공개된 전주 대비 증감률로 역산",
    "points": [
     [
@@ -758,7 +794,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/incheon/seohae/infection-watch/influenza",
    "note": "43주 값은 공개된 전주 대비 증감률로 역산",
    "points": [
     [
@@ -793,7 +829,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/ulsan/namgu/infection-watch/influenza",
    "note": "40·43주 값은 공개된 증감률로 역산",
    "points": [
     [
@@ -820,7 +856,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/gyeonggi/seongnam/infection-watch/influenza",
    "note": "43주 값은 공개된 전주 대비 증감률로 역산",
    "points": [
     [
@@ -863,7 +899,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/gangwon/sokcho/infection-watch/influenza",
    "note": "43주 값은 공개된 전주 대비 증감률로 역산",
    "points": [
     [
@@ -898,7 +934,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/chungbuk/danyang/infection-watch/influenza",
    "points": [
     [
      "2026-37",
@@ -940,7 +976,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/chungnam/nonsan/infection-watch/influenza",
    "note": "40·43주 값은 공개된 증감률로 역산",
    "points": [
     [
@@ -967,7 +1003,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/daejeon/donggu/infection-watch/influenza",
    "points": [
     [
      "2026-37",
@@ -1001,7 +1037,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/jeonbuk/namwon/infection-watch/influenza",
    "points": [
     [
      "2026-39",
@@ -1035,7 +1071,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/gyeongbuk/uiseong/infection-watch/influenza",
    "points": [
     [
      "2026-39",
@@ -1069,7 +1105,7 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
-   "sourceUrl": "https://www.yugacrew.com",
+   "sourceUrl": "https://www.yugacrew.com/gyeongnam/yangsan/infection-watch/influenza",
    "points": [
     [
      "2026-40",
@@ -1084,9 +1120,258 @@
      34
     ]
    ]
+  },
+  {
+   "id": "covid-pos",
+   "region": "전국",
+   "kind": "official",
+   "disease": "covid",
+   "age": "all",
+   "ageLabel": "의원급",
+   "metric": "코로나19 바이러스 검출률",
+   "unit": "%",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
+   "points": [
+    [
+     "2026-39",
+     14.2
+    ],
+    [
+     "2026-40",
+     9
+    ],
+    [
+     "2026-41",
+     8.7
+    ]
+   ]
+  },
+  {
+   "id": "myco-hosp",
+   "region": "전국",
+   "kind": "official",
+   "disease": "myco",
+   "age": "all",
+   "ageLabel": "병원급",
+   "metric": "마이코플라스마 입원환자 수(추정)",
+   "unit": "명/주",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
+   "points": [
+    [
+     "2026-39",
+     25
+    ],
+    [
+     "2026-40",
+     28
+    ],
+    [
+     "2026-41",
+     24
+    ]
+   ],
+   "note": "41주 세균성 입원 25명 중 마이코플라스마 96.0%"
+  },
+  {
+   "id": "sari-hosp",
+   "region": "전국",
+   "kind": "official",
+   "disease": "ari",
+   "age": "all",
+   "ageLabel": "상급종합",
+   "metric": "중증급성호흡기감염증 입원환자 수",
+   "unit": "명/주",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
+   "points": [
+    [
+     "2026-38",
+     295
+    ],
+    [
+     "2026-39",
+     301
+    ],
+    [
+     "2026-40",
+     256
+    ],
+    [
+     "2026-41",
+     262
+    ]
+   ]
+  },
+  {
+   "id": "enteric",
+   "region": "전국",
+   "kind": "official",
+   "disease": "noro",
+   "age": "all",
+   "ageLabel": "병원급",
+   "metric": "장관감염증 환자 수",
+   "unit": "명/주",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
+   "points": [
+    [
+     "2026-38",
+     538
+    ],
+    [
+     "2026-39",
+     580
+    ],
+    [
+     "2026-40",
+     485
+    ],
+    [
+     "2026-41",
+     520
+    ]
+   ]
+  },
+  {
+   "id": "noro-cases",
+   "region": "전국",
+   "kind": "official",
+   "disease": "noro",
+   "age": "all",
+   "ageLabel": "병원급",
+   "metric": "노로바이러스 환자 수(추정)",
+   "unit": "명/주",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
+   "points": [
+    [
+     "2026-39",
+     87
+    ],
+    [
+     "2026-40",
+     85
+    ],
+    [
+     "2026-41",
+     82
+    ]
+   ],
+   "note": "41주 장관감염증 520명 × 바이러스 44.6% × 노로 35.3%"
+  },
+  {
+   "id": "hfmd-ili",
+   "region": "전국",
+   "kind": "official",
+   "disease": "hfmd",
+   "age": "all",
+   "ageLabel": "전체",
+   "metric": "수족구병 의사환자 분율",
+   "unit": "명/외래 1,000명",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
+   "points": [
+    [
+     "2026-38",
+     6.8
+    ],
+    [
+     "2026-39",
+     6.1
+    ],
+    [
+     "2026-40",
+     5.5
+    ],
+    [
+     "2026-41",
+     4.3
+    ]
+   ]
+  },
+  {
+   "id": "flu-0-6-세종",
+   "region": "세종",
+   "kind": "official",
+   "disease": "flu",
+   "age": "infant",
+   "ageLabel": "0–6세",
+   "metric": "의사환자 분율",
+   "unit": "명/외래 1,000명",
+   "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
+   "sourceUrl": "https://www.yugacrew.com/sejong/sejong/infection-watch/influenza",
+   "points": [
+    [
+     "2026-40",
+     17.9
+    ],
+    [
+     "2026-43",
+     9.8
+    ],
+    [
+     "2026-44",
+     12.7
+    ]
+   ]
+  },
+  {
+   "id": "flu-0-6-제주",
+   "region": "제주",
+   "kind": "official",
+   "disease": "flu",
+   "age": "infant",
+   "ageLabel": "0–6세",
+   "metric": "의사환자 분율",
+   "unit": "명/외래 1,000명",
+   "source": "질병청 시·도별 표본감시(육아크루 주간 정리 경유)",
+   "sourceUrl": "https://www.yugacrew.com/jeju/jeju/infection-watch/influenza",
+   "points": [
+    [
+     "2026-40",
+     42.3
+    ],
+    [
+     "2026-43",
+     18.8
+    ],
+    [
+     "2026-44",
+     29.1
+    ]
+   ]
   }
  ],
  "sync": {
-  "processedDocs": []
+  "processedDocs": [
+   "20261022164832775",
+   "20261029165104848",
+   "20261105173342597"
+  ],
+  "lastRun": "2026-11-11 14:08",
+  "sources": [
+   {
+    "id": "bulletin",
+    "name": "질병청 주간소식지",
+    "status": "ok",
+    "detail": "2026년 44주차 소식지 반영(+36값)",
+    "week": "2026-41"
+   },
+   {
+    "id": "press",
+    "name": "질병청 독감 보도자료",
+    "status": "error",
+    "detail": "인플루엔자 보도자료를 찾지 못함"
+   },
+   {
+    "id": "regional",
+    "name": "시도별 영유아 독감",
+    "status": "ok",
+    "detail": "15개 시도 반영 · 없음: 전남광주",
+    "week": "2026-44"
+   }
+  ]
  }
 }
