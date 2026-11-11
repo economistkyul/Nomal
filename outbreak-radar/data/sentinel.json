@@ -518,7 +518,6 @@
    "unit": "명/외래 1,000명",
    "source": "질병청 감염병 표본감시 주간소식지",
    "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
-   "note": "42주 값은 증감률로 역산",
    "points": [
     [
      "2026-40",
