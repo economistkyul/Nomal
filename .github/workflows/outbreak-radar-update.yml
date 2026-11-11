@@ -1,0 +1,57 @@
+name: 감염병 확산 레이더 자료 갱신
+
+on:
+  schedule:
+    # 매일 10:17, 18:17 (한국시간). 질병청은 목·금요일에 주간 자료를 냄
+    - cron: '17 1 * * *'
+    - cron: '17 9 * * *'
+  workflow_dispatch:
+    inputs:
+      kdca_url:
+        description: '(선택) 주간소식지 글 주소 — 목록을 못 읽을 때 붙여 넣기'
+        required: false
+      skip_regional:
+        description: '시도별 수집 끄기 (1 = 끔)'
+        required: false
+        default: '0'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: outbreak-radar-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: outbreak-radar
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: 파서 테스트
+        run: node --test scripts/parse.test.mjs
+      - name: 자료 수집
+        env:
+          KDCA_WEEKLY_URL: ${{ inputs.kdca_url }}
+          SKIP_REGIONAL: ${{ inputs.skip_regional }}
+        run: node scripts/update.mjs
+      - name: 미리보기 다시 만들기
+        if: always()
+        run: node build_preview.js
+      - name: 바뀐 자료 올리기
+        if: always()
+        run: |
+          git config user.name "outbreak-radar-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/sentinel.json preview.html
+          if git diff --cached --quiet; then echo "바뀐 것 없음"; exit 0; fi
+          WEEK=$(node -p "require('./data/sentinel.json').latestWeek")
+          git commit -m "감염병 확산 레이더 자료 갱신 (${WEEK}주)"
+          for i in 1 2 3; do git pull --rebase origin main && git push && exit 0; sleep 5; done
+          exit 1

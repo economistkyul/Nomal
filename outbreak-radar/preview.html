@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>감염병 확산 레이더</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+.rd {
+  color-scheme: light;
+  --bg:#f6f5f2; --surface:#fcfcfb; --surface-2:#f0efec; --line:#e2e0da;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#7a7974; --s1:#2a78d6; --bar:#5598e7;
+  --early:#d03b3b; --signal:#ec835a; --rising:#b07a00; --falling:#0ca30c; --hold:#c9c7c0;
+  --early-bg:#fbe4e2; --signal-bg:#fcebe3; --rising-bg:#fdf3dc; --peak-bg:#ecebe7; --flat-bg:#f0efec; --falling-bg:#e3f3e1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .rd {
+    color-scheme: dark;
+    --bg:#121211; --surface:#1a1a19; --surface-2:#232321; --line:#33332f;
+    --ink:#f0efec; --ink-2:#c3c2b7; --ink-3:#8f8e86; --s1:#3987e5; --bar:#3987e5; --rising:#fab219; --hold:#4a4a45;
+    --early-bg:#47201e; --signal-bg:#43281c; --rising-bg:#3f3418; --peak-bg:#2b2b28; --flat-bg:#262624; --falling-bg:#1c3319;
+  }
+}
+:root[data-theme="dark"] .rd {
+  color-scheme: dark;
+  --bg:#121211; --surface:#1a1a19; --surface-2:#232321; --line:#33332f;
+  --ink:#f0efec; --ink-2:#c3c2b7; --ink-3:#8f8e86; --s1:#3987e5; --bar:#3987e5; --rising:#fab219; --hold:#4a4a45;
+  --early-bg:#47201e; --signal-bg:#43281c; --rising-bg:#3f3418; --peak-bg:#2b2b28; --flat-bg:#262624; --falling-bg:#1c3319;
+}
+html,body{margin:0}
+.rd{background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;font-size:15px;line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+.rd *{box-sizing:border-box}
+.rd-wrap{max-width:760px;overflow-x:hidden;margin:0 auto;padding:20px 16px 48px}
+.rd h1{font-size:22px;margin:0;letter-spacing:-.02em}
+.rd h2{font-size:17px;margin:30px 0 4px;letter-spacing:-.01em}
+.rd-sub{color:var(--ink-2);font-size:13px;margin-top:2px}
+.rd-muted{color:var(--ink-3);font-size:12.5px}
+.rd-lead{margin:14px 0 0;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:14.5px}
+.rd-lead b{font-weight:700}
+.rd-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;padding:2px 8px;border-radius:6px;white-space:nowrap;color:var(--ink)}
+.rd-badge i{font-style:normal;font-size:11px}
+.st-early{background:var(--early-bg)} .st-early i{color:var(--early)}
+.st-signal{background:var(--signal-bg)} .st-signal i{color:var(--signal)}
+.st-rising{background:var(--rising-bg)} .st-rising i{color:var(--rising)}
+.st-peak{background:var(--peak-bg)} .st-peak i{color:var(--ink-2)}
+.st-flat{background:var(--flat-bg)} .st-flat i{color:var(--ink-3)}
+.st-falling{background:var(--falling-bg)} .st-falling i{color:var(--falling)}
+.st-hold{background:transparent;border:1px dashed var(--hold);color:var(--ink-3)}
+/* 질병 카드 */
+.rd-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:10px}
+.rd-card{font:inherit;color:inherit;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+.rd-card:hover,.rd-card.sel{border-color:var(--ink)}
+.rd-card .nm{font-size:13.5px;font-weight:700;word-break:keep-all;line-height:1.3}
+.rd-card .row{display:flex;justify-content:space-between;align-items:flex-end;gap:6px}
+.rd-card .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.rd-card .d{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.rd-card .u{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rd-card svg{display:block;width:100%;height:30px;overflow:visible}
+/* 지도 */
+.rd-map{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px;max-width:520px}
+.rd-tile{font:inherit;color:inherit;border:2px solid transparent;border-radius:10px;padding:7px 4px 6px;text-align:center;cursor:pointer;min-height:66px;display:flex;flex-direction:column;justify-content:center;gap:1px}
+.rd-tile:hover,.rd-tile.sel{border-color:var(--ink)}
+.rd-tile .n{font-size:12px;font-weight:500;color:var(--ink-2)}
+.rd-tile .v{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
+.rd-tile .d{font-size:11.5px;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.rd-tile .d i{font-style:normal}
+.rd-tile.none{background:transparent;border:1px dashed var(--line);cursor:default}
+.rd-tile.none .v{font-size:12px;font-weight:400;color:var(--ink-3)}
+.rd-tile.gap{visibility:hidden}
+.rd-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+/* 연령 막대 */
+.rd-bars{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.rd-bar{display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:center;padding:4px 0;font:inherit;color:inherit;background:none;border:0;width:100%;text-align:left}
+.rd-bar .lab{font-size:12.5px;color:var(--ink-2)}
+.rd-bar .trk{position:relative;height:22px}
+.rd-bar .fill{position:absolute;left:0;top:3px;bottom:3px;background:var(--bar);border-radius:0 4px 4px 0}
+.rd-bar .num{position:absolute;top:1px;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;padding-left:6px;white-space:nowrap}
+.rd-bar .num small{font-weight:400;color:var(--ink-3);font-size:11px;margin-left:4px}
+.rd-thr{position:absolute;top:0;bottom:0;border-left:1px dashed var(--ink-3)}
+.rd-barsnote{font-size:11.5px;color:var(--ink-3);margin:6px 0 0 72px}
+/* 상세 */
+.rd-detail{margin-top:10px;padding:14px;border-radius:14px;background:var(--surface);border:1px solid var(--ink)}
+.rd-detail h3{margin:0;font-size:16px}
+.rd-series{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+.rd-series:first-of-type{border-top:0;margin-top:6px;padding-top:0}
+.rd-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.rd-head b{font-size:14px}
+.rd-reasons{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-2)}
+.rd-chart{position:relative;margin-top:8px}
+.rd-chart svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y}
+.rd-tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-115%);opacity:0;transition:opacity .1s}
+.rd-src{font-size:12px;color:var(--ink-3);margin-top:6px}
+.rd-src a{color:var(--ink-2)}
+.rd-btn{font:inherit;font-size:13px;padding:5px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.rd details{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.rd summary{cursor:pointer;font-weight:500;font-size:14px}
+.rd details p,.rd details li{font-size:13.5px;color:var(--ink-2)}
+.rd table.rules{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.rd table.rules td{padding:6px 4px;border-top:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+</style>
+</head>
+<body>
+<div class="rd"><div class="rd-wrap">
+  <header>
+    <h1>감염병 확산 레이더</h1>
+    <div class="rd-sub" id="asof">불러오는 중…</div>
+    <div class="rd-muted" id="sync"></div>
+    <p class="rd-lead" id="lead" hidden></p>
+  </header>
+
+  <h2>질병별 현황</h2>
+  <div class="rd-muted">카드를 누르면 추이와 판정 근거가 나옵니다. 숫자 옆 %는 전주 대비.</div>
+  <div class="rd-cards" id="cards"></div>
+  <div id="detail-disease"></div>
+
+  <h2>시·도 지도 — 영유아(0–6세) 독감</h2>
+  <div class="rd-muted">외래 1,000명당 의사환자. 칸 색은 확산 단계, 아래 숫자는 전주 대비. 칸을 누르면 그 지역 추이.</div>
+  <div class="rd-map" id="map"></div>
+  <div class="rd-legend" id="legend"></div>
+  <div id="detail-region"></div>
+
+  <h2>연령대별 독감</h2>
+  <div class="rd-muted" id="ages-sub"></div>
+  <div class="rd-bars" id="ages"></div>
+  <div id="detail-age"></div>
+
+  <h2>판정 방법과 자료</h2>
+  <details>
+    <summary>단계는 이렇게 정합니다</summary>
+    <table class="rules">
+      <tr><td><span class="rd-badge st-early"><i>▲▲</i>확산 초기</span></td><td>2주 이상 연속 증가 + 주간 증가율 8% 이상 + 아직 낮은 수준(기준 고점의 50% 미만, 기준이 없으면 상승 3주 이내)</td></tr>
+      <tr><td><span class="rd-badge st-signal"><i>▲</i>초기 신호</span></td><td>1주 증가(+8% 이상) — 한 주 더 확인 필요</td></tr>
+      <tr><td><span class="rd-badge st-rising"><i>↗</i>확산 중</span></td><td>증가 중이나 이미 높은 수준이거나 4주 넘게 상승</td></tr>
+      <tr><td><span class="rd-badge st-peak"><i>⌒</i>정점·둔화</span></td><td>높은 수준에서 증가세가 꺾임</td></tr>
+      <tr><td><span class="rd-badge st-flat"><i>→</i>보합</span></td><td>주간 −5% ~ +8%, 또는 방향이 엇갈림</td></tr>
+      <tr><td><span class="rd-badge st-falling"><i>▼</i>감소</span></td><td>주간 −5% 이하</td></tr>
+    </table>
+    <p>주간 증가율은 최근 연속 주차 값의 로그 기울기입니다. 자료가 두 주뿐이면 한 주 변화만으로 판정하므로 '초기 신호'까지만 줍니다.</p>
+  </details>
+  <details>
+    <summary>쓰는 자료와 한계</summary>
+    <ul id="srclist"></ul>
+    <p>표본감시는 발표까지 약 1주가 걸리는 잠정치입니다. 시·도별 값은 표본 의원 수가 적어 주간 변동이 크므로 한 주 급등은 '초기 신호'로만 봅니다. 전남광주·세종·제주는 시·도 단위 값을 받지 못해 비워 두었습니다. 이 화면은 참고 지표이며 질병청 공식 판정을 대신하지 않습니다.</p>
+    <p>자료는 GitHub Actions가 매일 오전 질병청 감염병포털 주간소식지·인플루엔자 보도자료와 시·도별 요약을 읽어 자동으로 갱신합니다. 질병청 발표가 주 1회라 실제로 값이 바뀌는 것은 주 1~2회입니다. RSV·마이코플라스마·노로 입원 수는 소식지의 전체 입원 수에 원인 비중을 곱한 추정치입니다.</p>
+  </details>
+</div></div>
+
+<script>
+/*
+ * 확산 감지 엔진 (브라우저·Node 공용)
+ * 주간 시계열 하나를 받아 "확산 초기 / 확산 중 / 정점·둔화 / 감소 / 보합 / 판정 보류"로 판정한다.
+ *
+ * 핵심 아이디어
+ *  - 성장률: 최근 연속 주차(최대 4주)의 로그-선형 기울기 → 주간 증가율 r
+ *  - 연속 상승: 바로 이전 주 대비 증가가 몇 주째 이어지는지
+ *  - 수준: 기준 고점(지난 절기 정점 등) 대비 현재 위치 L = 현재값 / 기준값
+ *  - "확산 초기" = 연속 2주 이상 증가 + 주간 증가율 8% 이상 + 아직 기준 고점의 50% 미만
+ */
+(function (root, factory) {
+  if (typeof module === 'object' && module.exports) module.exports = factory();
+  else root.Detect = factory();
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  var CFG = {
+    growthUp: 0.08,     // 주간 +8% 이상이면 "증가"
+    growthDown: -0.05,  // 주간 -5% 이하이면 "감소"
+    earlyLevel: 0.5,    // 기준 고점의 50% 미만이면 "초기" 구간
+    earlyWeeks: 3,      // 기준 고점이 없으면: 상승 시작 3주 이내를 "초기"로 본다
+    jump: 0.25,         // 한 주 +25% 이상 급증이면 "초기 신호"
+    maxFitWeeks: 4,
+  };
+
+  // 질병청 주차(일~토). 1월 1일이 들어 있는 주가 1주차
+  // (검증: 2026년 44주=10.25~10.31, 2026년 36주=8.30~9.5, 2024년 36주=9.1~, 2022년 37주=9.4~ — 질병청 발표와 일치)
+  function weekStart(year, week) {
+    var jan1 = new Date(Date.UTC(year, 0, 1));
+    var dow = jan1.getUTCDay(); // 0=일
+    var start = new Date(jan1.getTime() - dow * 864e5);
+    return new Date(start.getTime() + (week - 1) * 7 * 864e5);
+  }
+  function parseWeek(key) { // "2026-44"
+    var p = String(key).split('-');
+    return { y: +p[0], w: +p[1] };
+  }
+  function weekIndex(key) {
+    var p = parseWeek(key);
+    return Math.round(weekStart(p.y, p.w).getTime() / (7 * 864e5));
+  }
+  function weekLabel(key) {
+    var p = parseWeek(key);
+    var s = weekStart(p.y, p.w), e = new Date(s.getTime() + 6 * 864e5);
+    var f = function (d) { return (d.getUTCMonth() + 1) + '.' + d.getUTCDate(); };
+    return p.w + '주(' + f(s) + '~' + f(e) + ')';
+  }
+
+  // 마지막 값에서 거슬러 올라가며 끊김 없는 연속 구간
+  function tailRun(pts) {
+    var run = [pts[pts.length - 1]];
+    for (var i = pts.length - 2; i >= 0; i--) {
+      if (run[0].i - pts[i].i === 1) run.unshift(pts[i]); else break;
+    }
+    return run;
+  }
+
+  function logSlope(run) {
+    var xs = [], ys = [];
+    run.forEach(function (p) { if (p.v > 0) { xs.push(p.i); ys.push(Math.log(p.v)); } });
+    var n = xs.length;
+    if (n < 2) return null;
+    var mx = xs.reduce(function (a, b) { return a + b; }, 0) / n;
+    var my = ys.reduce(function (a, b) { return a + b; }, 0) / n;
+    var num = 0, den = 0;
+    for (var k = 0; k < n; k++) { num += (xs[k] - mx) * (ys[k] - my); den += (xs[k] - mx) * (xs[k] - mx); }
+    return Math.exp(num / den) - 1; // 주간 증가율
+  }
+
+  /**
+   * @param {Array<[string, number]>} points  [["2026-43", 19.2], ...] (주차 오름차순 아니어도 됨)
+   * @param {{ref?: number, threshold?: number}} opt
+   */
+  function analyze(points, opt) {
+    opt = opt || {};
+    var pts = (points || [])
+      .filter(function (p) { return p && p[1] != null && !isNaN(p[1]); })
+      .map(function (p) { return { k: p[0], i: weekIndex(p[0]), v: +p[1] }; })
+      .sort(function (a, b) { return a.i - b.i; });
+
+    var out = { n: pts.length, last: null, lastKey: null, prev: null, wow: null, growth: null,
+      streak: 0, level: null, ref: null, stage: 'hold', score: 0, reasons: [] };
+    if (!pts.length) { out.reasons.push('데이터 없음'); return out; }
+
+    var last = pts[pts.length - 1];
+    out.last = last.v; out.lastKey = last.k;
+
+    var run = tailRun(pts);
+
+    // 연속 상승 주수
+    for (var j = run.length - 1; j > 0; j--) { if (run[j].v > run[j - 1].v) out.streak++; else break; }
+    if (run.length >= 2) {
+      out.prev = run[run.length - 2].v;
+      out.wow = out.prev > 0 ? last.v / out.prev - 1 : null;
+    }
+    // 성장률: 상승이 2주 이상 이어지면 그 상승 구간의 기울기(재확산을 V자 평균으로 희석하지 않도록),
+    // 아니면 최근 3주 기울기
+    var fit = out.streak >= 2 ? run.slice(-Math.min(out.streak + 1, CFG.maxFitWeeks)) : run.slice(-3);
+    out.growth = fit.length >= 2 ? logSlope(fit) : null;
+
+    // 수준: 기준 고점(지난 절기 정점 등)이 있으면 그 대비 위치.
+    // 없으면(검색량·신고 건수 등) 자기 최댓값과 비교하면 오를 때마다 100%가 되므로,
+    // 대신 '상승이 시작된 지 몇 주째인가'로 초기 여부를 가린다.
+    out.ref = opt.ref || null;
+    out.level = out.ref ? last.v / out.ref : null;
+    var young = out.ref ? out.level < CFG.earlyLevel : out.streak <= CFG.earlyWeeks;
+    var aboveThreshold = opt.threshold != null ? last.v >= opt.threshold : null;
+
+    if (run.length < 2) {
+      out.stage = 'hold';
+      out.reasons.push('연속된 주차 자료가 없어 추세 판정 보류');
+      return finish(out);
+    }
+
+    var g = out.growth, L = out.level;
+    var where = function () {
+      return out.ref ? '기준 고점의 ' + pct(L) + ' 수준' + (young ? '(아직 낮음)' : '') : '상승 ' + out.streak + '주째';
+    };
+    var prevGrowth = run.length >= 4 ? logSlope(run.slice(-4, -1)) : null;
+
+    if (g >= CFG.growthUp && out.streak >= 2 && young) {
+      out.stage = 'early';
+      out.reasons.push(out.streak + '주 연속 증가, 주간 +' + pct(g));
+      out.reasons.push(where());
+    } else if (g >= CFG.growthUp && out.streak >= 1) {
+      out.stage = young ? 'signal' : 'rising';
+      out.reasons.push('주간 +' + pct(g) + ', 연속 증가 ' + out.streak + '주');
+      if (out.stage === 'signal') out.reasons.push('증가 확인 1주 더 필요');
+      else out.reasons.push(out.ref ? '이미 기준 고점의 ' + pct(L) : '상승 ' + out.streak + '주째 지속');
+    } else if (out.wow != null && out.wow >= CFG.jump && (out.ref ? L < CFG.earlyLevel : true)) {
+      out.stage = 'signal';
+      out.reasons.push('전주 대비 +' + pct(out.wow) + ' 급증(1주)');
+    } else if (g <= CFG.growthDown && out.wow != null && out.wow > 0.02) {
+      out.stage = 'flat';
+      out.reasons.push('최근 3주 추세는 감소(' + pct(g) + ')지만 지난주 +' + pct(out.wow) + ' 반등');
+    } else if (g <= CFG.growthDown) {
+      out.stage = 'falling';
+      out.reasons.push('주간 ' + pct(g) + ' 감소');
+    } else if (prevGrowth != null && prevGrowth >= CFG.growthUp && (out.ref ? L >= CFG.earlyLevel : true)) {
+      out.stage = 'peak';
+      out.reasons.push('증가세 둔화(직전 +' + pct(prevGrowth) + ' → 최근 ' + pct(g) + ')');
+    } else {
+      out.stage = 'flat';
+      out.reasons.push('뚜렷한 증감 없음(주간 ' + pct(g) + ')');
+    }
+    if (aboveThreshold === true) out.reasons.push('유행기준(' + opt.threshold + ') 초과');
+    if (aboveThreshold === false) out.reasons.push('유행기준(' + opt.threshold + ') 미만');
+    return finish(out);
+  }
+
+  function finish(o) {
+    // 순위용 점수: "초기"일수록, 빠를수록 높게
+    var g = Math.max(0, o.growth || 0), L = o.level != null ? Math.min(1, o.level) : Math.min(1, o.streak / 6);
+    var base = { early: 70, signal: 45, rising: 35, peak: 15, flat: 5, falling: 0, hold: 0 }[o.stage];
+    o.score = Math.round(Math.min(100, base + 60 * Math.min(g, 0.5) * (1 - L) + 5 * Math.min(o.streak, 3)));
+    return o;
+  }
+
+  function pct(x) {
+    if (x == null || isNaN(x)) return '–';
+    var s = Math.round(x * 1000) / 10;
+    return (s > 0 ? '' : '') + s + '%';
+  }
+
+  var STAGES = {
+    early:   { label: '확산 초기', order: 6, tone: 'early' },
+    signal:  { label: '초기 신호', order: 5, tone: 'signal' },
+    rising:  { label: '확산 중',  order: 4, tone: 'rising' },
+    peak:    { label: '정점·둔화', order: 3, tone: 'peak' },
+    flat:    { label: '보합',     order: 2, tone: 'flat' },
+    falling: { label: '감소',     order: 1, tone: 'falling' },
+    hold:    { label: '판정 보류', order: 0, tone: 'hold' },
+  };
+
+  /**
+   * 같은 칸(질병×연령×지역)에 들어온 공식·소프트 신호를 묶어 신뢰도를 매긴다.
+   * 공식+소프트 모두 상승 → 높음 / 공식만 → 보통 / 소프트만 → 낮음(조기경보)
+   */
+  function combine(results) {
+    var up = function (r) { return ['early', 'signal', 'rising'].indexOf(r.stage) >= 0; };
+    var off = results.filter(function (r) { return r.kind === 'official'; });
+    var soft = results.filter(function (r) { return r.kind === 'soft'; });
+    var best = results.slice().sort(function (a, b) {
+      return (b.kind === 'official') - (a.kind === 'official') || STAGES[b.stage].order - STAGES[a.stage].order || b.score - a.score;
+    })[0];
+    var offUp = off.some(up), softUp = soft.some(up);
+    var conf = offUp && softUp ? 'high' : offUp ? 'mid' : softUp ? 'low' : (off.length ? 'mid' : 'low');
+    // 공식 자료가 판정 보류일 때 소프트가 상승이면 소프트 판정을 대표로
+    if (best && best.stage === 'hold' && softUp) best = soft.filter(up)[0];
+    return { best: best, confidence: conf, officialUp: offUp, softUp: softUp };
+  }
+
+  return { analyze: analyze, combine: combine, STAGES: STAGES, CFG: CFG, weekLabel: weekLabel, weekIndex: weekIndex, pct: pct };
+});
+
+</script>
+<script>window.SEED_DATA={"_readme":"GitHub Actions가 매일 scripts/update.mjs로 자동 갱신합니다. 손으로 고칠 때는 points에 [\"연도-주차\", 값]을 추가하세요.","updated":"2026-11-10","latestWeek":"2026-44","diseases":[{"id":"flu","name":"인플루엔자(독감)","main":["flu-ili-all"]},{"id":"covid","name":"코로나19","main":["covid-hosp"]},{"id":"ari","name":"급성호흡기감염증","main":["ari-hosp"]},{"id":"hfmd","name":"수족구병","main":["hfmd-0-6","hfmd-ili"]},{"id":"noro","name":"노로바이러스","main":["noro-cases","noro-0-6"]},{"id":"rsv","name":"RSV","main":["rsv-hosp","rsv-0-6"]},{"id":"myco","name":"마이코플라스마 폐렴","main":["myco-hosp","myco-0-6"]},{"id":"tsutsu","name":"쯔쯔가무시증(털진드기)","main":["tsutsu-mite"]}],"series":[{"id":"flu-ili-all","disease":"flu","age":"all","ageLabel":"전체","region":"전국","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","threshold":12.9,"source":"질병청 의원급 인플루엔자 표본감시","sourceUrl":"https://www.kdca.go.kr/bbs/kdca/42/310702/download.do","points":[["2026-32",7],["2026-33",7.5],["2026-34",9.2],["2026-35",13.3],["2026-36",25.3],["2026-40",23.6],["2026-41",21.6],["2026-42",17.7],["2026-43",19.2],["2026-44",22.8]],"ref":70.9,"refLabel":"지난 절기 47주(2025.11) 수준"},{"id":"flu-ili-0","disease":"flu","age":"infant","ageLabel":"0세","region":"전국","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","threshold":12.9,"source":"질병청 의원급 인플루엔자 표본감시","sourceUrl":"https://www.kdca.go.kr/bbs/kdca/42/310702/download.do","points":[["2026-35",6.8],["2026-36",24],["2026-44",20.6]]},{"id":"flu-ili-1-6","disease":"flu","age":"infant","ageLabel":"1–6세","region":"전국","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","threshold":12.9,"source":"질병청 의원급 인플루엔자 표본감시","sourceUrl":"https://www.kdca.go.kr/bbs/kdca/42/310702/download.do","points":[["2026-35",22.6],["2026-36",49.8],["2026-40",37.7],["2026-41",39.1],["2026-43",31.7],["2026-44",33.1]]},{"id":"flu-ili-7-12","disease":"flu","age":"child","ageLabel":"7–12세","region":"전국","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","threshold":12.9,"source":"질병청 의원급 인플루엔자 표본감시","sourceUrl":"https://www.kdca.go.kr/bbs/kdca/42/310702/download.do","points":[["2026-35",36.5],["2026-36",75.1],["2026-43",49],["2026-44",60.9]],"ref":175.9,"refLabel":"지난 절기 48주(2025.11) 수준"},{"id":"flu-ili-13-18","disease":"flu","age":"teen","ageLabel":"13–18세","region":"전국","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","threshold":12.9,"source":"질병청 의원급 인플루엔자 표본감시","sourceUrl":"https://www.kdca.go.kr/bbs/kdca/42/310702/download.do","points":[["2026-35",14.6],["2026-36",31.3],["2026-44",37.4]]},{"id":"flu-ili-19-49","disease":"flu","age":"adult","ageLabel":"19–49세","region":"전국","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","threshold":12.9,"source":"질병청 의원급 인플루엔자 표본감시","sourceUrl":"https://www.kdca.go.kr/bbs/kdca/42/310702/download.do","points":[["2026-35",14.9],["2026-36",23.5],["2026-44",23.7]]},{"id":"flu-ili-50-64","disease":"flu","age":"adult","ageLabel":"50–64세","region":"전국","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","threshold":12.9,"source":"질병청 의원급 인플루엔자 표본감시","sourceUrl":"https://www.kdca.go.kr/bbs/kdca/42/310702/download.do","points":[["2026-35",7.5],["2026-36",11.8],["2026-44",13.1]]},{"id":"flu-ili-65","disease":"flu","age":"senior","ageLabel":"65세 이상","region":"전국","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","threshold":12.9,"source":"질병청 의원급 인플루엔자 표본감시","sourceUrl":"https://www.kdca.go.kr/bbs/kdca/42/310702/download.do","points":[["2026-35",4.7],["2026-36",8.8],["2026-44",10.1]]},{"id":"flu-hosp","disease":"flu","age":"senior","ageLabel":"병원급","region":"전국","kind":"official","metric":"독감 입원환자 수","unit":"명/주(223곳)","note":"44주 입원환자 중 65세 이상 64.9% · 인플루엔자 양성 사망 신고 21건(전년 동기 4건)","source":"질병청 병원급 인플루엔자 입원환자 표본감시","sourceUrl":"https://www.kdca.go.kr/bbs/kdca/42/310702/download.do","points":[["2026-33",78],["2026-34",89],["2026-35",166],["2026-36",300],["2026-41",406],["2026-42",441],["2026-43",389],["2026-44",461]]},{"id":"flu-pos","disease":"flu","age":"all","ageLabel":"의원급","region":"전국","kind":"official","metric":"독감 바이러스 검출률","unit":"%","note":"44주 우세 아형 A(H1N1)pdm09 (29.8%)","source":"질병청 의원급 인플루엔자 병원체 감시","sourceUrl":"https://www.kdca.go.kr/bbs/kdca/42/310702/download.do","points":[["2026-32",5.7],["2026-33",5.4],["2026-34",10],["2026-35",12.3],["2026-41",25.2],["2026-42",24.2],["2026-43",25.3],["2026-44",30]]},{"id":"covid-hosp","disease":"covid","age":"all","ageLabel":"병원급","region":"전국","kind":"official","metric":"코로나19 입원환자 수","unit":"명/주","source":"질병청 감염병 표본감시 주간소식지 44주(와이드경제 보도)","sourceUrl":"https://www.widedaily.com/news/articleView.html?idxno=302993","points":[["2026-43",208],["2026-44",174]]},{"id":"ari-hosp","disease":"ari","age":"all","ageLabel":"병원급","region":"전국","kind":"official","metric":"급성호흡기감염증 입원환자 수","unit":"명/주","note":"리노·RSV·아데노 등 바이러스 합계. 중증(상급종합) 입원은 256→262명","source":"질병청 감염병 표본감시 주간소식지 44주(와이드경제 보도)","sourceUrl":"https://www.widedaily.com/news/articleView.html?idxno=302993","points":[["2026-43",1154],["2026-44",1276]]},{"id":"hfmd-0-6","disease":"hfmd","age":"infant","ageLabel":"0–6세","region":"전국","kind":"official","metric":"수족구병 의사환자 분율","unit":"명/외래 1,000명","source":"질병청 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com/seoul/dobong/infection-watch","note":"42주 값은 증감률로 역산","points":[["2026-40",12.7],["2026-41",12.4],["2026-42",10.4],["2026-43",9.7],["2026-44",6.5]]},{"id":"noro-0-6","disease":"noro","age":"infant","ageLabel":"0–6세","region":"전국","kind":"official","metric":"노로바이러스 환자 지표","unit":"0–6세, 주간","source":"질병청 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com/seoul/dobong/infection-watch","note":"민간 정리본 수치로 단위 표기가 원자료와 다를 수 있음 — 추세만 참고","points":[["2026-39",7],["2026-40",18],["2026-41",7],["2026-42",13],["2026-43",13],["2026-44",20]]},{"id":"rsv-0-6","disease":"rsv","age":"infant","ageLabel":"0–6세","region":"전국","kind":"official","metric":"RSV 환자 지표","unit":"0–6세, 주간","source":"질병청 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com/seoul/dobong/infection-watch","note":"민간 정리본 수치로 단위 표기가 원자료와 다를 수 있음 — 추세만 참고","points":[["2026-38",12],["2026-39",5],["2026-40",8],["2026-41",5],["2026-42",10],["2026-43",12],["2026-44",7]]},{"id":"myco-0-6","disease":"myco","age":"infant","ageLabel":"0–6세","region":"전국","kind":"official","metric":"마이코플라스마 폐렴 환자 지표","unit":"0–6세, 주간","source":"질병청 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com/seoul/dobong/infection-watch","note":"민간 정리본 수치로 단위 표기가 원자료와 다를 수 있음 — 추세만 참고","points":[["2026-40",12],["2026-41",13],["2026-42",12],["2026-43",12],["2026-44",8]]},{"id":"tsutsu-mite","disease":"tsutsu","age":"all","ageLabel":"매개체","region":"전국","kind":"official","metric":"털진드기 지수","unit":"트랩당 개체","note":"환자 수가 아니라 매개체 밀도. 환자는 통상 2~3주 뒤 늘어남","source":"질병청 보도자료(11.6) 털진드기 발생 감시","sourceUrl":"https://kdca.go.kr/kdca/2848/subview.do","points":[["2026-43",0.18],["2026-44",0.45]]},{"id":"flu-0-6-서울","disease":"flu","age":"infant","ageLabel":"0–6세","region":"서울","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","note":"43주 값은 공개된 전주 대비 증감률로 역산","points":[["2026-37",54.7],["2026-40",41.9],["2026-41",38.9],["2026-43",31.2],["2026-44",28.9]]},{"id":"flu-0-6-부산","disease":"flu","age":"infant","ageLabel":"0–6세","region":"부산","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","note":"43주 값은 공개된 전주 대비 증감률로 역산","points":[["2026-37",80.7],["2026-40",48.5],["2026-41",44.6],["2026-43",25.2],["2026-44",26.5]]},{"id":"flu-0-6-대구","disease":"flu","age":"infant","ageLabel":"0–6세","region":"대구","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","note":"43주 값은 공개된 전주 대비 증감률로 역산","points":[["2026-37",44.8],["2026-40",36.4],["2026-41",40.9],["2026-43",34.8],["2026-44",40.2]]},{"id":"flu-0-6-인천","disease":"flu","age":"infant","ageLabel":"0–6세","region":"인천","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","note":"43주 값은 공개된 전주 대비 증감률로 역산","points":[["2026-37",50.9],["2026-40",34],["2026-41",39],["2026-43",25.4],["2026-44",26.9]]},{"id":"flu-0-6-울산","disease":"flu","age":"infant","ageLabel":"0–6세","region":"울산","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","note":"40·43주 값은 공개된 증감률로 역산","points":[["2026-40",38.7],["2026-43",26.4],["2026-44",35.9]]},{"id":"flu-0-6-경기","disease":"flu","age":"infant","ageLabel":"0–6세","region":"경기","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","note":"43주 값은 공개된 전주 대비 증감률로 역산","points":[["2026-37",49.9],["2026-38",65],["2026-40",36.7],["2026-41",33.9],["2026-42",35],["2026-43",30.6],["2026-44",31.3]]},{"id":"flu-0-6-강원","disease":"flu","age":"infant","ageLabel":"0–6세","region":"강원","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","note":"43주 값은 공개된 전주 대비 증감률로 역산","points":[["2026-37",46.1],["2026-40",35.5],["2026-41",45.2],["2026-43",37],["2026-44",30.3]]},{"id":"flu-0-6-충북","disease":"flu","age":"infant","ageLabel":"0–6세","region":"충북","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","points":[["2026-37",38.4],["2026-39",29.1],["2026-40",45.8],["2026-41",45],["2026-42",24.7],["2026-43",40.8],["2026-44",33.4]]},{"id":"flu-0-6-충남","disease":"flu","age":"infant","ageLabel":"0–6세","region":"충남","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","note":"40·43주 값은 공개된 증감률로 역산","points":[["2026-40",21.9],["2026-43",24.6],["2026-44",30.8]]},{"id":"flu-0-6-대전","disease":"flu","age":"infant","ageLabel":"0–6세","region":"대전","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","points":[["2026-37",59.3],["2026-40",38.7],["2026-41",47.9],["2026-43",30.7],["2026-44",47.2]]},{"id":"flu-0-6-전북","disease":"flu","age":"infant","ageLabel":"0–6세","region":"전북","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","points":[["2026-39",61.8],["2026-40",54],["2026-42",40.8],["2026-43",31.7],["2026-44",34.6]]},{"id":"flu-0-6-경북","disease":"flu","age":"infant","ageLabel":"0–6세","region":"경북","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","points":[["2026-39",63.3],["2026-40",43],["2026-42",45.7],["2026-43",46.5],["2026-44",45.6]]},{"id":"flu-0-6-경남","disease":"flu","age":"infant","ageLabel":"0–6세","region":"경남","kind":"official","metric":"의사환자 분율","unit":"명/외래 1,000명","source":"질병청 시·도별 표본감시(육아크루 주간 정리 경유)","sourceUrl":"https://www.yugacrew.com","points":[["2026-40",27.6],["2026-43",29.8],["2026-44",34]]}],"sync":{"processedDocs":[]}};</script>
+<script>
+(function(){
+  var D=window.Detect, NS='http://www.w3.org/2000/svg';
+  var ICON={early:'▲▲',signal:'▲',rising:'↗',peak:'⌒',flat:'→',falling:'▼',hold:'?'};
+  var TILES=[['인천','서울','경기','강원'],['충남','세종','충북','경북'],['전북','대전','대구','울산'],['전남광주',null,'경남','부산'],['제주',null,null,null]];
+  var AGEROWS=[['flu-ili-0','0세'],['flu-ili-1-6','1–6세'],['flu-ili-7-12','7–12세'],['flu-ili-13-18','13–18세'],['flu-ili-19-49','19–49세'],['flu-ili-50-64','50–64세'],['flu-ili-65','65세+']];
+  var S={data:null,by:{},disease:null,region:null,age:null};
+  var $=function(id){return document.getElementById(id)};
+  function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+  function sv(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+  function fmt(v){return v==null?'–':(Math.abs(v)>=100?Math.round(v).toLocaleString('ko-KR'):String(Math.round(v*100)/100).replace(/(\.\d)\d$/,v<1?'$&':'$1'))}
+  function sg(x){if(x==null)return '–';var p=Math.round(x*1000)/10;return (p>0?'+':'')+p+'%'}
+  function badge(st){var b=el('span','rd-badge st-'+st);b.appendChild(el('i',null,ICON[st]));b.appendChild(document.createTextNode(D.STAGES[st].label));return b}
+  function wk(k){return k.split('-')[1]+'주'}
+
+  // 1) GitHub 저장소의 최신 자료(자동 갱신본) → 2) 같은 폴더의 자료 → 3) 페이지에 넣어 둔 자료
+  var RAW='https://raw.githubusercontent.com/economistkyul/Nomal/main/outbreak-radar/data/sentinel.json';
+  function getJson(u){return fetch(u,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()})}
+  function load(){
+    getJson(RAW).catch(function(){return getJson('data/sentinel.json')})
+      .then(start)
+      .catch(function(){ if(window.SEED_DATA) start(window.SEED_DATA); else $('asof').textContent='데이터를 불러오지 못했습니다.'; });
+  }
+  function pick(d){var ids=[].concat(d.main);for(var i=0;i<ids.length;i++){var s=S.by[ids[i]];if(s&&s.points.length>=2)return s}return S.by[ids[0]]}
+  function start(d){
+    d.series.forEach(function(s){s.res=D.analyze(s.points,{ref:s.ref,threshold:s.threshold});S.by[s.id]=s});
+    S.data=d;
+    var lw=d.latestWeek.split('-');
+    $('asof').textContent='기준: '+lw[0]+'년 '+D.weekLabel(d.latestWeek)+' · 자료 갱신 '+d.updated;
+    var lg=$('legend');['early','signal','rising','peak','flat','falling'].forEach(function(k){lg.appendChild(badge(k))});
+    var seen={},ul=$('srclist');d.series.forEach(function(s){if(seen[s.source])return;seen[s.source]=1;var li=el('li',null,s.source+' ');if(s.sourceUrl){var a=el('a',null,'원문');a.href=s.sourceUrl;a.target='_blank';a.rel='noopener';li.appendChild(a)}ul.appendChild(li)});
+    sync(d); lead(); render();
+  }
+  function sync(d){
+    var y=d.sync, box=$('sync'); if(!y||!y.lastRun){box.textContent='자동 갱신 기록 없음 — 처음 자동 실행 전 자료';return}
+    box.textContent='자동 갱신 '+y.lastRun+' · ';
+    (y.sources||[]).forEach(function(s,i){var sp=el('span',null,(i?' · ':'')+(s.status==='ok'?'✓ ':s.status==='skip'?'– ':'✗ ')+s.name);sp.title=s.detail||'';box.appendChild(sp)});
+  }
+  function lead(){
+    var d=S.data, up=d.diseases.filter(function(x){var r=pick(x).res;return r.stage==='early'||r.stage==='signal'||r.stage==='rising'}).map(function(x){return x.name});
+    var regs=d.series.filter(function(s){return s.region!=='전국'}), hot=regs.filter(function(s){return ['early','signal','rising'].indexOf(s.res.stage)>=0}).sort(function(a,b){return b.res.wow-a.res.wow}).map(function(s){return s.region});
+    var p=$('lead');p.hidden=false;
+    p.appendChild(el('b',null,'이번 주 오르는 것: '));p.appendChild(document.createTextNode(up.join(', ')+'. '));
+    p.appendChild(el('b',null,'영유아 독감이 오르는 지역: '));p.appendChild(document.createTextNode(hot.length?hot.join(' · ')+' ('+regs.length+'개 시·도 중 '+hot.length+'곳).':'없음.'));
+  }
+
+  function render(){ cards(); map(); ages(); }
+
+  function spark(s){
+    var pts=s.points.map(function(p){return {i:D.weekIndex(p[0]),v:+p[1]}}).sort(function(a,b){return a.i-b.i}).slice(-8);
+    var W=140,H=30,i0=pts[0].i,i1=Math.max(pts[pts.length-1].i,i0+1),mx=Math.max.apply(null,pts.map(function(p){return p.v}))||1;
+    var x=function(i){return 3+(i-i0)/(i1-i0)*(W-6)},y=function(v){return H-4-v/mx*(H-8)};
+    var g=sv('svg',{viewBox:'0 0 '+W+' '+H,preserveAspectRatio:'none','aria-hidden':'true'}),dp='',pv=null;
+    pts.forEach(function(p){dp+=(pv&&p.i-pv.i===1?'L':'M')+x(p.i).toFixed(1)+' '+y(p.v).toFixed(1);pv=p});
+    sv('path',{d:dp,fill:'none',stroke:'var(--s1)','stroke-width':2,'vector-effect':'non-scaling-stroke','stroke-linejoin':'round'},g);
+    return g;
+  }
+  function cards(){
+    var box=$('cards');box.textContent='';
+    S.data.diseases.forEach(function(d){
+      var s=pick(d),r=s.res,c=el('button','rd-card'+(S.disease===d.id?' sel':''));c.type='button';c.id='card-'+d.id;
+      c.appendChild(el('div','nm',d.name));
+      var b=badge(r.stage);b.style.alignSelf='flex-start';c.appendChild(b);
+      var row=el('div','row');row.appendChild(el('span','v',fmt(r.last)));row.appendChild(el('span','d',sg(r.wow)));c.appendChild(row);
+      c.appendChild(el('div','u',(s.ageLabel?s.ageLabel+' ':'')+s.metric.replace(/^(독감|코로나19|RSV|마이코플라스마|노로바이러스|수족구병|급성호흡기감염증\(바이러스\)) /,'')+' · '+s.unit));
+      c.appendChild(spark(s));
+      c.onclick=function(){S.disease=S.disease===d.id?null:d.id;cards();if(S.disease)$('detail-disease').scrollIntoView({behavior:'smooth',block:'nearest'})};
+      box.appendChild(c);
+    });
+    var dd=$('detail-disease');dd.textContent='';
+    if(S.disease){var d=S.data.diseases.find(function(x){return x.id===S.disease});
+      var main=pick(d),list=S.data.series.filter(function(s){return s.disease===d.id&&s.region==='전국'&&s.points.length&&(d.id!=='flu'||['flu-ili-all','flu-hosp','flu-pos'].indexOf(s.id)>=0)}).sort(function(a,b){return (b===main)-(a===main)});
+      dd.appendChild(detail(d.name+' · 전국',list,function(){S.disease=null;cards()},dd));}
+  }
+  function map(){
+    var box=$('map');box.textContent='';
+    TILES.forEach(function(row){row.forEach(function(n){
+      if(!n){box.appendChild(el('div','rd-tile gap'));return}
+      var s=S.by['flu-0-6-'+n];
+      if(!s){var t=el('div','rd-tile none');t.appendChild(el('span','n',n));t.appendChild(el('span','v','자료 없음'));box.appendChild(t);return}
+      var r=s.res,b=el('button','rd-tile st-'+r.stage+(S.region===n?' sel':''));b.type='button';b.id='tile-'+n;
+      b.setAttribute('aria-label',n+' '+fmt(r.last)+' '+D.STAGES[r.stage].label+' 전주 대비 '+sg(r.wow));
+      b.appendChild(el('span','n',n));b.appendChild(el('span','v',fmt(r.last)));
+      var d=el('span','d');d.appendChild(el('i',null,ICON[r.stage]+' '));d.appendChild(document.createTextNode(sg(r.wow)));b.appendChild(d);
+      b.onclick=function(){S.region=S.region===n?null:n;map();if(S.region)$('detail-region').scrollIntoView({behavior:'smooth',block:'nearest'})};
+      box.appendChild(b);
+    })});
+    var dr=$('detail-region');dr.textContent='';
+    if(S.region)dr.appendChild(detail(S.region+' · 영유아(0–6세) 독감',[S.by['flu-0-6-'+S.region]],function(){S.region=null;map()},dr));
+  }
+  function ages(){
+    var box=$('ages');box.textContent='';
+    var thr=S.by['flu-ili-all'].threshold, mx=Math.max.apply(null,AGEROWS.map(function(a){return S.by[a[0]].res.last}))*1.7;
+    $('ages-sub').textContent=wk(S.data.latestWeek)+' 외래 1,000명당 의사환자. 점선은 유행기준 '+thr+'명. 막대를 누르면 추이.';
+    AGEROWS.forEach(function(a){
+      var s=S.by[a[0]],r=s.res,b=el('button','rd-bar');b.type='button';b.style.cursor='pointer';
+      b.appendChild(el('span','lab',a[1]));
+      var t=el('span','trk'),f=el('span','fill');f.style.width=(r.last/mx*100)+'%';t.appendChild(f);
+      var th=el('span','rd-thr');th.style.left=(thr/mx*100)+'%';t.appendChild(th);
+      var n=el('span','num',fmt(r.last));n.style.left=(r.last/mx*100)+'%';
+      n.appendChild(el('small',null,r.wow!=null?'전주 '+sg(r.wow):'약 '+(r.last/thr).toFixed(1)+'배'));t.appendChild(n);
+      b.appendChild(t);b.title=a[1]+' '+fmt(r.last)+'명';
+      b.onclick=function(){S.age=S.age===a[0]?null:a[0];ages();if(S.age)$('detail-age').scrollIntoView({behavior:'smooth',block:'nearest'})};
+      box.appendChild(b);
+    });
+    box.appendChild(el('div','rd-barsnote','전주 대비가 없는 연령은 질병청이 43주 값을 그래프로만 공개해 유행기준 대비 배수로 표시'));
+    var da=$('detail-age');da.textContent='';
+    if(S.age){var list=[S.by[S.age]];if(S.age==='flu-ili-65')list.push(S.by['flu-hosp']);da.appendChild(detail('독감 · '+S.by[S.age].ageLabel,list,function(){S.age=null;ages()},da));}
+  }
+
+  function detail(title,list,onClose,host){
+    var d=el('div','rd-detail'),h=el('div','rd-head');h.appendChild(el('h3',null,title));
+    var c=el('button','rd-btn','닫기');c.type='button';c.onclick=onClose;h.appendChild(c);d.appendChild(h);
+    list.forEach(function(s){
+      var r=s.res,sec=el('div','rd-series'),hh=el('div','rd-head');
+      hh.appendChild(el('b',null,(s.ageLabel?s.ageLabel+' ':'')+s.metric));hh.appendChild(badge(r.stage));sec.appendChild(hh);
+      sec.appendChild(el('div','rd-muted','최근 '+fmt(r.last)+' '+s.unit+' ('+D.weekLabel(r.lastKey)+') · 전주 대비 '+sg(r.wow)));
+      var ul=el('ul','rd-reasons');r.reasons.forEach(function(x){ul.appendChild(el('li',null,x))});
+      if(s.ref)ul.appendChild(el('li',null,'기준 고점: '+s.refLabel+' '+fmt(s.ref)));
+      if(s.note)ul.appendChild(el('li',null,s.note));sec.appendChild(ul);
+      sec.appendChild(chart(s,host));
+      var src=el('div','rd-src','출처: '+s.source+' ');if(s.sourceUrl){var a=el('a',null,'원문');a.href=s.sourceUrl;a.target='_blank';a.rel='noopener';src.appendChild(a)}sec.appendChild(src);
+      d.appendChild(sec);
+    });
+    return d;
+  }
+  function chart(s,host){
+    var wrap=el('div','rd-chart');wrap.id='chart-'+s.id;
+    var pts=s.points.map(function(p){return {k:p[0],i:D.weekIndex(p[0]),v:+p[1]}}).sort(function(a,b){return a.i-b.i});
+    var W=Math.max(290,Math.min(700,(host.clientWidth||360)-30)),H=W<480?160:180,m={l:38,r:12,t:16,b:22};
+    var i0=pts[0].i,i1=Math.max(pts[pts.length-1].i,i0+1),top=Math.max.apply(null,pts.map(function(p){return p.v}).concat(s.threshold||0)),vmax=top*1.15||1;
+    var x=function(i){return m.l+(i-i0)/(i1-i0)*(W-m.l-m.r)},y=function(v){return H-m.b-v/vmax*(H-m.t-m.b)};
+    var g=sv('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':s.metric+' 추이'});
+    [0,.5,1].forEach(function(f){var v=top*f,yy=y(v);sv('line',{x1:m.l,x2:W-m.r,y1:yy,y2:yy,stroke:'var(--line)'},g);sv('text',{x:m.l-6,y:yy+4,'text-anchor':'end','font-size':11,fill:'var(--ink-3)'},g).textContent=fmt(v)});
+    if(s.threshold){var ty=y(s.threshold);sv('line',{x1:m.l,x2:W-m.r,y1:ty,y2:ty,stroke:'var(--ink-3)','stroke-dasharray':'4 4'},g);sv('text',{x:m.l+4,y:ty-4,'font-size':11,fill:'var(--ink-2)'},g).textContent='유행기준 '+s.threshold}
+    var dp='',pv=null;pts.forEach(function(p){dp+=(pv&&p.i-pv.i===1?'L':'M')+x(p.i).toFixed(1)+' '+y(p.v).toFixed(1);pv=p});
+    sv('path',{d:dp,fill:'none',stroke:'var(--s1)','stroke-width':2,'stroke-linejoin':'round'},g);
+    var last=pts[pts.length-1];
+    pts.forEach(function(p){sv('circle',{cx:x(p.i),cy:y(p.v),r:p===last?4.5:3,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2},g)});
+    var px=-99;pts.slice().reverse().forEach(function(p){var xx=x(p.i);if(Math.abs(xx-px)<34&&p!==last)return;px=xx;sv('text',{x:xx,y:H-5,'text-anchor':'middle','font-size':11,fill:'var(--ink-3)'},g).textContent=wk(p.k)});
+    sv('text',{x:x(last.i)-8,y:y(last.v)-8,'text-anchor':'end','font-size':12,'font-weight':700,fill:'var(--ink)'},g).textContent=fmt(last.v);
+    var cr=sv('line',{x1:0,x2:0,y1:m.t,y2:H-m.b,stroke:'var(--ink-3)',opacity:0},g);
+    wrap.appendChild(g);var tip=el('div','rd-tip');wrap.appendChild(tip);
+    function mv(e){var rc=g.getBoundingClientRect(),q=(e.clientX-rc.left)/rc.width*W,b=pts.reduce(function(a,c){return Math.abs(x(c.i)-q)<Math.abs(x(a.i)-q)?c:a});
+      cr.setAttribute('x1',x(b.i));cr.setAttribute('x2',x(b.i));cr.setAttribute('opacity',1);tip.textContent=D.weekLabel(b.k)+' · '+fmt(b.v);
+      tip.style.left=Math.min(Math.max(x(b.i)/W*rc.width,64),rc.width-64)+'px';tip.style.top=(y(b.v)/H*rc.height)+'px';tip.style.opacity=1}
+    g.addEventListener('pointermove',mv);g.addEventListener('pointerdown',mv);g.addEventListener('pointerleave',function(){tip.style.opacity=0;cr.setAttribute('opacity',0)});
+    return wrap;
+  }
+  load();
+})();
+</script>
+</body>
+</html>

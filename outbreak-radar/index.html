@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>감염병 확산 레이더</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+.rd {
+  color-scheme: light;
+  --bg:#f6f5f2; --surface:#fcfcfb; --surface-2:#f0efec; --line:#e2e0da;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#7a7974; --s1:#2a78d6; --bar:#5598e7;
+  --early:#d03b3b; --signal:#ec835a; --rising:#b07a00; --falling:#0ca30c; --hold:#c9c7c0;
+  --early-bg:#fbe4e2; --signal-bg:#fcebe3; --rising-bg:#fdf3dc; --peak-bg:#ecebe7; --flat-bg:#f0efec; --falling-bg:#e3f3e1;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .rd {
+    color-scheme: dark;
+    --bg:#121211; --surface:#1a1a19; --surface-2:#232321; --line:#33332f;
+    --ink:#f0efec; --ink-2:#c3c2b7; --ink-3:#8f8e86; --s1:#3987e5; --bar:#3987e5; --rising:#fab219; --hold:#4a4a45;
+    --early-bg:#47201e; --signal-bg:#43281c; --rising-bg:#3f3418; --peak-bg:#2b2b28; --flat-bg:#262624; --falling-bg:#1c3319;
+  }
+}
+:root[data-theme="dark"] .rd {
+  color-scheme: dark;
+  --bg:#121211; --surface:#1a1a19; --surface-2:#232321; --line:#33332f;
+  --ink:#f0efec; --ink-2:#c3c2b7; --ink-3:#8f8e86; --s1:#3987e5; --bar:#3987e5; --rising:#fab219; --hold:#4a4a45;
+  --early-bg:#47201e; --signal-bg:#43281c; --rising-bg:#3f3418; --peak-bg:#2b2b28; --flat-bg:#262624; --falling-bg:#1c3319;
+}
+html,body{margin:0}
+.rd{background:var(--bg);color:var(--ink);font-family:'Noto Sans KR',system-ui,sans-serif;font-size:15px;line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased}
+.rd *{box-sizing:border-box}
+.rd-wrap{max-width:760px;overflow-x:hidden;margin:0 auto;padding:20px 16px 48px}
+.rd h1{font-size:22px;margin:0;letter-spacing:-.02em}
+.rd h2{font-size:17px;margin:30px 0 4px;letter-spacing:-.01em}
+.rd-sub{color:var(--ink-2);font-size:13px;margin-top:2px}
+.rd-muted{color:var(--ink-3);font-size:12.5px}
+.rd-lead{margin:14px 0 0;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line);font-size:14.5px}
+.rd-lead b{font-weight:700}
+.rd-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;padding:2px 8px;border-radius:6px;white-space:nowrap;color:var(--ink)}
+.rd-badge i{font-style:normal;font-size:11px}
+.st-early{background:var(--early-bg)} .st-early i{color:var(--early)}
+.st-signal{background:var(--signal-bg)} .st-signal i{color:var(--signal)}
+.st-rising{background:var(--rising-bg)} .st-rising i{color:var(--rising)}
+.st-peak{background:var(--peak-bg)} .st-peak i{color:var(--ink-2)}
+.st-flat{background:var(--flat-bg)} .st-flat i{color:var(--ink-3)}
+.st-falling{background:var(--falling-bg)} .st-falling i{color:var(--falling)}
+.st-hold{background:transparent;border:1px dashed var(--hold);color:var(--ink-3)}
+/* 질병 카드 */
+.rd-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:10px}
+.rd-card{font:inherit;color:inherit;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0}
+.rd-card:hover,.rd-card.sel{border-color:var(--ink)}
+.rd-card .nm{font-size:13.5px;font-weight:700;word-break:keep-all;line-height:1.3}
+.rd-card .row{display:flex;justify-content:space-between;align-items:flex-end;gap:6px}
+.rd-card .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.rd-card .d{font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.rd-card .u{font-size:11px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rd-card svg{display:block;width:100%;height:30px;overflow:visible}
+/* 지도 */
+.rd-map{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px;max-width:520px}
+.rd-tile{font:inherit;color:inherit;border:2px solid transparent;border-radius:10px;padding:7px 4px 6px;text-align:center;cursor:pointer;min-height:66px;display:flex;flex-direction:column;justify-content:center;gap:1px}
+.rd-tile:hover,.rd-tile.sel{border-color:var(--ink)}
+.rd-tile .n{font-size:12px;font-weight:500;color:var(--ink-2)}
+.rd-tile .v{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
+.rd-tile .d{font-size:11.5px;font-variant-numeric:tabular-nums;color:var(--ink-2)}
+.rd-tile .d i{font-style:normal}
+.rd-tile.none{background:transparent;border:1px dashed var(--line);cursor:default}
+.rd-tile.none .v{font-size:12px;font-weight:400;color:var(--ink-3)}
+.rd-tile.gap{visibility:hidden}
+.rd-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+/* 연령 막대 */
+.rd-bars{margin-top:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.rd-bar{display:grid;grid-template-columns:64px 1fr;gap:8px;align-items:center;padding:4px 0;font:inherit;color:inherit;background:none;border:0;width:100%;text-align:left}
+.rd-bar .lab{font-size:12.5px;color:var(--ink-2)}
+.rd-bar .trk{position:relative;height:22px}
+.rd-bar .fill{position:absolute;left:0;top:3px;bottom:3px;background:var(--bar);border-radius:0 4px 4px 0}
+.rd-bar .num{position:absolute;top:1px;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;padding-left:6px;white-space:nowrap}
+.rd-bar .num small{font-weight:400;color:var(--ink-3);font-size:11px;margin-left:4px}
+.rd-thr{position:absolute;top:0;bottom:0;border-left:1px dashed var(--ink-3)}
+.rd-barsnote{font-size:11.5px;color:var(--ink-3);margin:6px 0 0 72px}
+/* 상세 */
+.rd-detail{margin-top:10px;padding:14px;border-radius:14px;background:var(--surface);border:1px solid var(--ink)}
+.rd-detail h3{margin:0;font-size:16px}
+.rd-series{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+.rd-series:first-of-type{border-top:0;margin-top:6px;padding-top:0}
+.rd-head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.rd-head b{font-size:14px}
+.rd-reasons{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-2)}
+.rd-chart{position:relative;margin-top:8px}
+.rd-chart svg{display:block;width:100%;height:auto;overflow:visible;touch-action:pan-y}
+.rd-tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:4px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-115%);opacity:0;transition:opacity .1s}
+.rd-src{font-size:12px;color:var(--ink-3);margin-top:6px}
+.rd-src a{color:var(--ink-2)}
+.rd-btn{font:inherit;font-size:13px;padding:5px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.rd details{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.rd summary{cursor:pointer;font-weight:500;font-size:14px}
+.rd details p,.rd details li{font-size:13.5px;color:var(--ink-2)}
+.rd table.rules{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.rd table.rules td{padding:6px 4px;border-top:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+</style>
+</head>
+<body>
+<div class="rd"><div class="rd-wrap">
+  <header>
+    <h1>감염병 확산 레이더</h1>
+    <div class="rd-sub" id="asof">불러오는 중…</div>
+    <div class="rd-muted" id="sync"></div>
+    <p class="rd-lead" id="lead" hidden></p>
+  </header>
+
+  <h2>질병별 현황</h2>
+  <div class="rd-muted">카드를 누르면 추이와 판정 근거가 나옵니다. 숫자 옆 %는 전주 대비.</div>
+  <div class="rd-cards" id="cards"></div>
+  <div id="detail-disease"></div>
+
+  <h2>시·도 지도 — 영유아(0–6세) 독감</h2>
+  <div class="rd-muted">외래 1,000명당 의사환자. 칸 색은 확산 단계, 아래 숫자는 전주 대비. 칸을 누르면 그 지역 추이.</div>
+  <div class="rd-map" id="map"></div>
+  <div class="rd-legend" id="legend"></div>
+  <div id="detail-region"></div>
+
+  <h2>연령대별 독감</h2>
+  <div class="rd-muted" id="ages-sub"></div>
+  <div class="rd-bars" id="ages"></div>
+  <div id="detail-age"></div>
+
+  <h2>판정 방법과 자료</h2>
+  <details>
+    <summary>단계는 이렇게 정합니다</summary>
+    <table class="rules">
+      <tr><td><span class="rd-badge st-early"><i>▲▲</i>확산 초기</span></td><td>2주 이상 연속 증가 + 주간 증가율 8% 이상 + 아직 낮은 수준(기준 고점의 50% 미만, 기준이 없으면 상승 3주 이내)</td></tr>
+      <tr><td><span class="rd-badge st-signal"><i>▲</i>초기 신호</span></td><td>1주 증가(+8% 이상) — 한 주 더 확인 필요</td></tr>
+      <tr><td><span class="rd-badge st-rising"><i>↗</i>확산 중</span></td><td>증가 중이나 이미 높은 수준이거나 4주 넘게 상승</td></tr>
+      <tr><td><span class="rd-badge st-peak"><i>⌒</i>정점·둔화</span></td><td>높은 수준에서 증가세가 꺾임</td></tr>
+      <tr><td><span class="rd-badge st-flat"><i>→</i>보합</span></td><td>주간 −5% ~ +8%, 또는 방향이 엇갈림</td></tr>
+      <tr><td><span class="rd-badge st-falling"><i>▼</i>감소</span></td><td>주간 −5% 이하</td></tr>
+    </table>
+    <p>주간 증가율은 최근 연속 주차 값의 로그 기울기입니다. 자료가 두 주뿐이면 한 주 변화만으로 판정하므로 '초기 신호'까지만 줍니다.</p>
+  </details>
+  <details>
+    <summary>쓰는 자료와 한계</summary>
+    <ul id="srclist"></ul>
+    <p>표본감시는 발표까지 약 1주가 걸리는 잠정치입니다. 시·도별 값은 표본 의원 수가 적어 주간 변동이 크므로 한 주 급등은 '초기 신호'로만 봅니다. 전남광주·세종·제주는 시·도 단위 값을 받지 못해 비워 두었습니다. 이 화면은 참고 지표이며 질병청 공식 판정을 대신하지 않습니다.</p>
+    <p>자료는 GitHub Actions가 매일 오전 질병청 감염병포털 주간소식지·인플루엔자 보도자료와 시·도별 요약을 읽어 자동으로 갱신합니다. 질병청 발표가 주 1회라 실제로 값이 바뀌는 것은 주 1~2회입니다. RSV·마이코플라스마·노로 입원 수는 소식지의 전체 입원 수에 원인 비중을 곱한 추정치입니다.</p>
+  </details>
+</div></div>
+
+<script src="detect.js"></script>
+<script>
+(function(){
+  var D=window.Detect, NS='http://www.w3.org/2000/svg';
+  var ICON={early:'▲▲',signal:'▲',rising:'↗',peak:'⌒',flat:'→',falling:'▼',hold:'?'};
+  var TILES=[['인천','서울','경기','강원'],['충남','세종','충북','경북'],['전북','대전','대구','울산'],['전남광주',null,'경남','부산'],['제주',null,null,null]];
+  var AGEROWS=[['flu-ili-0','0세'],['flu-ili-1-6','1–6세'],['flu-ili-7-12','7–12세'],['flu-ili-13-18','13–18세'],['flu-ili-19-49','19–49세'],['flu-ili-50-64','50–64세'],['flu-ili-65','65세+']];
+  var S={data:null,by:{},disease:null,region:null,age:null};
+  var $=function(id){return document.getElementById(id)};
+  function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+  function sv(t,a,p){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+  function fmt(v){return v==null?'–':(Math.abs(v)>=100?Math.round(v).toLocaleString('ko-KR'):String(Math.round(v*100)/100).replace(/(\.\d)\d$/,v<1?'$&':'$1'))}
+  function sg(x){if(x==null)return '–';var p=Math.round(x*1000)/10;return (p>0?'+':'')+p+'%'}
+  function badge(st){var b=el('span','rd-badge st-'+st);b.appendChild(el('i',null,ICON[st]));b.appendChild(document.createTextNode(D.STAGES[st].label));return b}
+  function wk(k){return k.split('-')[1]+'주'}
+
+  // 1) GitHub 저장소의 최신 자료(자동 갱신본) → 2) 같은 폴더의 자료 → 3) 페이지에 넣어 둔 자료
+  var RAW='https://raw.githubusercontent.com/economistkyul/Nomal/main/outbreak-radar/data/sentinel.json';
+  function getJson(u){return fetch(u,{cache:'no-store'}).then(function(r){if(!r.ok)throw 0;return r.json()})}
+  function load(){
+    getJson(RAW).catch(function(){return getJson('data/sentinel.json')})
+      .then(start)
+      .catch(function(){ if(window.SEED_DATA) start(window.SEED_DATA); else $('asof').textContent='데이터를 불러오지 못했습니다.'; });
+  }
+  function pick(d){var ids=[].concat(d.main);for(var i=0;i<ids.length;i++){var s=S.by[ids[i]];if(s&&s.points.length>=2)return s}return S.by[ids[0]]}
+  function start(d){
+    d.series.forEach(function(s){s.res=D.analyze(s.points,{ref:s.ref,threshold:s.threshold});S.by[s.id]=s});
+    S.data=d;
+    var lw=d.latestWeek.split('-');
+    $('asof').textContent='기준: '+lw[0]+'년 '+D.weekLabel(d.latestWeek)+' · 자료 갱신 '+d.updated;
+    var lg=$('legend');['early','signal','rising','peak','flat','falling'].forEach(function(k){lg.appendChild(badge(k))});
+    var seen={},ul=$('srclist');d.series.forEach(function(s){if(seen[s.source])return;seen[s.source]=1;var li=el('li',null,s.source+' ');if(s.sourceUrl){var a=el('a',null,'원문');a.href=s.sourceUrl;a.target='_blank';a.rel='noopener';li.appendChild(a)}ul.appendChild(li)});
+    sync(d); lead(); render();
+  }
+  function sync(d){
+    var y=d.sync, box=$('sync'); if(!y||!y.lastRun){box.textContent='자동 갱신 기록 없음 — 처음 자동 실행 전 자료';return}
+    box.textContent='자동 갱신 '+y.lastRun+' · ';
+    (y.sources||[]).forEach(function(s,i){var sp=el('span',null,(i?' · ':'')+(s.status==='ok'?'✓ ':s.status==='skip'?'– ':'✗ ')+s.name);sp.title=s.detail||'';box.appendChild(sp)});
+  }
+  function lead(){
+    var d=S.data, up=d.diseases.filter(function(x){var r=pick(x).res;return r.stage==='early'||r.stage==='signal'||r.stage==='rising'}).map(function(x){return x.name});
+    var regs=d.series.filter(function(s){return s.region!=='전국'}), hot=regs.filter(function(s){return ['early','signal','rising'].indexOf(s.res.stage)>=0}).sort(function(a,b){return b.res.wow-a.res.wow}).map(function(s){return s.region});
+    var p=$('lead');p.hidden=false;
+    p.appendChild(el('b',null,'이번 주 오르는 것: '));p.appendChild(document.createTextNode(up.join(', ')+'. '));
+    p.appendChild(el('b',null,'영유아 독감이 오르는 지역: '));p.appendChild(document.createTextNode(hot.length?hot.join(' · ')+' ('+regs.length+'개 시·도 중 '+hot.length+'곳).':'없음.'));
+  }
+
+  function render(){ cards(); map(); ages(); }
+
+  function spark(s){
+    var pts=s.points.map(function(p){return {i:D.weekIndex(p[0]),v:+p[1]}}).sort(function(a,b){return a.i-b.i}).slice(-8);
+    var W=140,H=30,i0=pts[0].i,i1=Math.max(pts[pts.length-1].i,i0+1),mx=Math.max.apply(null,pts.map(function(p){return p.v}))||1;
+    var x=function(i){return 3+(i-i0)/(i1-i0)*(W-6)},y=function(v){return H-4-v/mx*(H-8)};
+    var g=sv('svg',{viewBox:'0 0 '+W+' '+H,preserveAspectRatio:'none','aria-hidden':'true'}),dp='',pv=null;
+    pts.forEach(function(p){dp+=(pv&&p.i-pv.i===1?'L':'M')+x(p.i).toFixed(1)+' '+y(p.v).toFixed(1);pv=p});
+    sv('path',{d:dp,fill:'none',stroke:'var(--s1)','stroke-width':2,'vector-effect':'non-scaling-stroke','stroke-linejoin':'round'},g);
+    return g;
+  }
+  function cards(){
+    var box=$('cards');box.textContent='';
+    S.data.diseases.forEach(function(d){
+      var s=pick(d),r=s.res,c=el('button','rd-card'+(S.disease===d.id?' sel':''));c.type='button';c.id='card-'+d.id;
+      c.appendChild(el('div','nm',d.name));
+      var b=badge(r.stage);b.style.alignSelf='flex-start';c.appendChild(b);
+      var row=el('div','row');row.appendChild(el('span','v',fmt(r.last)));row.appendChild(el('span','d',sg(r.wow)));c.appendChild(row);
+      c.appendChild(el('div','u',(s.ageLabel?s.ageLabel+' ':'')+s.metric.replace(/^(독감|코로나19|RSV|마이코플라스마|노로바이러스|수족구병|급성호흡기감염증\(바이러스\)) /,'')+' · '+s.unit));
+      c.appendChild(spark(s));
+      c.onclick=function(){S.disease=S.disease===d.id?null:d.id;cards();if(S.disease)$('detail-disease').scrollIntoView({behavior:'smooth',block:'nearest'})};
+      box.appendChild(c);
+    });
+    var dd=$('detail-disease');dd.textContent='';
+    if(S.disease){var d=S.data.diseases.find(function(x){return x.id===S.disease});
+      var main=pick(d),list=S.data.series.filter(function(s){return s.disease===d.id&&s.region==='전국'&&s.points.length&&(d.id!=='flu'||['flu-ili-all','flu-hosp','flu-pos'].indexOf(s.id)>=0)}).sort(function(a,b){return (b===main)-(a===main)});
+      dd.appendChild(detail(d.name+' · 전국',list,function(){S.disease=null;cards()},dd));}
+  }
+  function map(){
+    var box=$('map');box.textContent='';
+    TILES.forEach(function(row){row.forEach(function(n){
+      if(!n){box.appendChild(el('div','rd-tile gap'));return}
+      var s=S.by['flu-0-6-'+n];
+      if(!s){var t=el('div','rd-tile none');t.appendChild(el('span','n',n));t.appendChild(el('span','v','자료 없음'));box.appendChild(t);return}
+      var r=s.res,b=el('button','rd-tile st-'+r.stage+(S.region===n?' sel':''));b.type='button';b.id='tile-'+n;
+      b.setAttribute('aria-label',n+' '+fmt(r.last)+' '+D.STAGES[r.stage].label+' 전주 대비 '+sg(r.wow));
+      b.appendChild(el('span','n',n));b.appendChild(el('span','v',fmt(r.last)));
+      var d=el('span','d');d.appendChild(el('i',null,ICON[r.stage]+' '));d.appendChild(document.createTextNode(sg(r.wow)));b.appendChild(d);
+      b.onclick=function(){S.region=S.region===n?null:n;map();if(S.region)$('detail-region').scrollIntoView({behavior:'smooth',block:'nearest'})};
+      box.appendChild(b);
+    })});
+    var dr=$('detail-region');dr.textContent='';
+    if(S.region)dr.appendChild(detail(S.region+' · 영유아(0–6세) 독감',[S.by['flu-0-6-'+S.region]],function(){S.region=null;map()},dr));
+  }
+  function ages(){
+    var box=$('ages');box.textContent='';
+    var thr=S.by['flu-ili-all'].threshold, mx=Math.max.apply(null,AGEROWS.map(function(a){return S.by[a[0]].res.last}))*1.7;
+    $('ages-sub').textContent=wk(S.data.latestWeek)+' 외래 1,000명당 의사환자. 점선은 유행기준 '+thr+'명. 막대를 누르면 추이.';
+    AGEROWS.forEach(function(a){
+      var s=S.by[a[0]],r=s.res,b=el('button','rd-bar');b.type='button';b.style.cursor='pointer';
+      b.appendChild(el('span','lab',a[1]));
+      var t=el('span','trk'),f=el('span','fill');f.style.width=(r.last/mx*100)+'%';t.appendChild(f);
+      var th=el('span','rd-thr');th.style.left=(thr/mx*100)+'%';t.appendChild(th);
+      var n=el('span','num',fmt(r.last));n.style.left=(r.last/mx*100)+'%';
+      n.appendChild(el('small',null,r.wow!=null?'전주 '+sg(r.wow):'약 '+(r.last/thr).toFixed(1)+'배'));t.appendChild(n);
+      b.appendChild(t);b.title=a[1]+' '+fmt(r.last)+'명';
+      b.onclick=function(){S.age=S.age===a[0]?null:a[0];ages();if(S.age)$('detail-age').scrollIntoView({behavior:'smooth',block:'nearest'})};
+      box.appendChild(b);
+    });
+    box.appendChild(el('div','rd-barsnote','전주 대비가 없는 연령은 질병청이 43주 값을 그래프로만 공개해 유행기준 대비 배수로 표시'));
+    var da=$('detail-age');da.textContent='';
+    if(S.age){var list=[S.by[S.age]];if(S.age==='flu-ili-65')list.push(S.by['flu-hosp']);da.appendChild(detail('독감 · '+S.by[S.age].ageLabel,list,function(){S.age=null;ages()},da));}
+  }
+
+  function detail(title,list,onClose,host){
+    var d=el('div','rd-detail'),h=el('div','rd-head');h.appendChild(el('h3',null,title));
+    var c=el('button','rd-btn','닫기');c.type='button';c.onclick=onClose;h.appendChild(c);d.appendChild(h);
+    list.forEach(function(s){
+      var r=s.res,sec=el('div','rd-series'),hh=el('div','rd-head');
+      hh.appendChild(el('b',null,(s.ageLabel?s.ageLabel+' ':'')+s.metric));hh.appendChild(badge(r.stage));sec.appendChild(hh);
+      sec.appendChild(el('div','rd-muted','최근 '+fmt(r.last)+' '+s.unit+' ('+D.weekLabel(r.lastKey)+') · 전주 대비 '+sg(r.wow)));
+      var ul=el('ul','rd-reasons');r.reasons.forEach(function(x){ul.appendChild(el('li',null,x))});
+      if(s.ref)ul.appendChild(el('li',null,'기준 고점: '+s.refLabel+' '+fmt(s.ref)));
+      if(s.note)ul.appendChild(el('li',null,s.note));sec.appendChild(ul);
+      sec.appendChild(chart(s,host));
+      var src=el('div','rd-src','출처: '+s.source+' ');if(s.sourceUrl){var a=el('a',null,'원문');a.href=s.sourceUrl;a.target='_blank';a.rel='noopener';src.appendChild(a)}sec.appendChild(src);
+      d.appendChild(sec);
+    });
+    return d;
+  }
+  function chart(s,host){
+    var wrap=el('div','rd-chart');wrap.id='chart-'+s.id;
+    var pts=s.points.map(function(p){return {k:p[0],i:D.weekIndex(p[0]),v:+p[1]}}).sort(function(a,b){return a.i-b.i});
+    var W=Math.max(290,Math.min(700,(host.clientWidth||360)-30)),H=W<480?160:180,m={l:38,r:12,t:16,b:22};
+    var i0=pts[0].i,i1=Math.max(pts[pts.length-1].i,i0+1),top=Math.max.apply(null,pts.map(function(p){return p.v}).concat(s.threshold||0)),vmax=top*1.15||1;
+    var x=function(i){return m.l+(i-i0)/(i1-i0)*(W-m.l-m.r)},y=function(v){return H-m.b-v/vmax*(H-m.t-m.b)};
+    var g=sv('svg',{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':s.metric+' 추이'});
+    [0,.5,1].forEach(function(f){var v=top*f,yy=y(v);sv('line',{x1:m.l,x2:W-m.r,y1:yy,y2:yy,stroke:'var(--line)'},g);sv('text',{x:m.l-6,y:yy+4,'text-anchor':'end','font-size':11,fill:'var(--ink-3)'},g).textContent=fmt(v)});
+    if(s.threshold){var ty=y(s.threshold);sv('line',{x1:m.l,x2:W-m.r,y1:ty,y2:ty,stroke:'var(--ink-3)','stroke-dasharray':'4 4'},g);sv('text',{x:m.l+4,y:ty-4,'font-size':11,fill:'var(--ink-2)'},g).textContent='유행기준 '+s.threshold}
+    var dp='',pv=null;pts.forEach(function(p){dp+=(pv&&p.i-pv.i===1?'L':'M')+x(p.i).toFixed(1)+' '+y(p.v).toFixed(1);pv=p});
+    sv('path',{d:dp,fill:'none',stroke:'var(--s1)','stroke-width':2,'stroke-linejoin':'round'},g);
+    var last=pts[pts.length-1];
+    pts.forEach(function(p){sv('circle',{cx:x(p.i),cy:y(p.v),r:p===last?4.5:3,fill:'var(--s1)',stroke:'var(--surface)','stroke-width':2},g)});
+    var px=-99;pts.slice().reverse().forEach(function(p){var xx=x(p.i);if(Math.abs(xx-px)<34&&p!==last)return;px=xx;sv('text',{x:xx,y:H-5,'text-anchor':'middle','font-size':11,fill:'var(--ink-3)'},g).textContent=wk(p.k)});
+    sv('text',{x:x(last.i)-8,y:y(last.v)-8,'text-anchor':'end','font-size':12,'font-weight':700,fill:'var(--ink)'},g).textContent=fmt(last.v);
+    var cr=sv('line',{x1:0,x2:0,y1:m.t,y2:H-m.b,stroke:'var(--ink-3)',opacity:0},g);
+    wrap.appendChild(g);var tip=el('div','rd-tip');wrap.appendChild(tip);
+    function mv(e){var rc=g.getBoundingClientRect(),q=(e.clientX-rc.left)/rc.width*W,b=pts.reduce(function(a,c){return Math.abs(x(c.i)-q)<Math.abs(x(a.i)-q)?c:a});
+      cr.setAttribute('x1',x(b.i));cr.setAttribute('x2',x(b.i));cr.setAttribute('opacity',1);tip.textContent=D.weekLabel(b.k)+' · '+fmt(b.v);
+      tip.style.left=Math.min(Math.max(x(b.i)/W*rc.width,64),rc.width-64)+'px';tip.style.top=(y(b.v)/H*rc.height)+'px';tip.style.opacity=1}
+    g.addEventListener('pointermove',mv);g.addEventListener('pointerdown',mv);g.addEventListener('pointerleave',function(){tip.style.opacity=0;cr.setAttribute('opacity',0)});
+    return wrap;
+  }
+  load();
+})();
+</script>
+</body>
+</html>

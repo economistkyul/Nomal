@@ -1,0 +1,14 @@
+{
+  "name": "outbreak-radar",
+  "version": "0.1.0",
+  "private": true,
+  "description": "감염병 확산 레이더 — 질병청 감시자료로 질병·연령·시도별 확산 초기 신호 보기",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "update": "node scripts/update.mjs",
+    "test": "node --test scripts/parse.test.mjs",
+    "preview": "node build_preview.js"
+  }
+}
