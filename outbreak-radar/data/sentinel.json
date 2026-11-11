@@ -492,8 +492,8 @@
    "kind": "official",
    "metric": "급성호흡기감염증 입원환자 수",
    "unit": "명/주",
-   "source": "질병청 감염병 표본감시 주간소식지 44주(와이드경제 보도)",
-   "sourceUrl": "https://www.widedaily.com/news/articleView.html?idxno=302993",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
    "points": [
     [
      "2026-43",
@@ -503,7 +503,9 @@
      "2026-44",
      1276
     ]
-   ]
+   ],
+   "note": "44주 원인: 인플루엔자 바이러스 36.1%, 리노바이러스 26.8%, 코로나19 13.6%",
+   "noteWeek": "2026-44"
   },
   {
    "id": "hfmd-0-6",
@@ -1185,7 +1187,8 @@
      24
     ]
    ],
-   "note": "44주 세균성 입원 25명 중 마이코플라스마 96.0%"
+   "note": "44주 세균성 입원 25명 중 마이코플라스마 96.0%",
+   "noteWeek": "2026-44"
   },
   {
    "id": "sari-hosp",
@@ -1272,7 +1275,8 @@
      82
     ]
    ],
-   "note": "44주 장관감염증 520명 × 바이러스 44.6% × 노로 35.3%"
+   "note": "44주 장관감염증 520명 × 바이러스 44.6% × 노로 35.3%",
+   "noteWeek": "2026-44"
   },
   {
    "id": "hfmd-ili",
@@ -1355,6 +1359,24 @@
      29.1
     ]
    ]
+  },
+  {
+   "id": "rhino-hosp",
+   "region": "전국",
+   "kind": "official",
+   "disease": "ari",
+   "age": "all",
+   "ageLabel": "병원급",
+   "metric": "리노바이러스 입원환자 수(추정)",
+   "unit": "명/주",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261105173342597&q_clsfNo=2",
+   "points": [
+    [
+     "2026-44",
+     342
+    ]
+   ]
   }
  ],
  "sync": {
@@ -1363,13 +1385,13 @@
    "20261029165104848",
    "20261105173342597"
   ],
-  "lastRun": "2026-11-11 14:14",
+  "lastRun": "2026-11-11 14:15",
   "sources": [
    {
     "id": "bulletin",
     "name": "질병청 주간소식지",
     "status": "ok",
-    "detail": "2026년 44주차 소식지 반영(+0값)",
+    "detail": "2026년 44주차 소식지 반영(+1값)",
     "week": "2026-44"
    },
    {
