@@ -10,6 +10,10 @@ on:
       kdca_url:
         description: '(선택) 주간소식지 글 주소 — 목록을 못 읽을 때 붙여 넣기'
         required: false
+      debug:
+        description: '진단 로그 (1 = 켬)'
+        required: false
+        default: '0'
       skip_regional:
         description: '시도별 수집 끄기 (1 = 끔)'
         required: false
@@ -40,6 +44,7 @@ jobs:
         env:
           KDCA_WEEKLY_URL: ${{ inputs.kdca_url }}
           SKIP_REGIONAL: ${{ inputs.skip_regional }}
+          DEBUG: ${{ inputs.debug == '1' && '1' || '' }}
         run: node scripts/update.mjs
       - name: 미리보기 다시 만들기
         if: always()

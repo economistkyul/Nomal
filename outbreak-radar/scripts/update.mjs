@@ -91,7 +91,15 @@ async function bulletin(data, status) {
       `${DP}/pot/bbs/BD_selectBbsList.do?q_bbsSn=1010`,
     ];
     for (const u of lists) {
-      try { docs = findBulletinDocs(await get(u)); } catch (e) { status.detail = e.message; }
+      try {
+        const html = await get(u);
+        docs = findBulletinDocs(html);
+        if (process.env.DEBUG) {
+          console.log('[debug] list', u, 'len', html.length, 'docs', JSON.stringify(docs.slice(0, 6)));
+          const i = html.search(/주간소식지\s*\d+\s*주차/);
+          console.log('[debug] list-snippet', JSON.stringify(html.slice(Math.max(0, i - 600), i + 300)));
+        }
+      } catch (e) { status.detail = e.message; }
       if (docs.length) break;
     }
   }
@@ -103,7 +111,14 @@ async function bulletin(data, status) {
   for (const d of todo) {
     const url = `${DP}/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=${d.docNo}&q_clsfNo=2`;
     try {
-      const r = parseWeeklyBulletin(htmlToText(await get(url)));
+      const text = htmlToText(await get(url));
+      const r = parseWeeklyBulletin(text);
+      if (process.env.DEBUG) {
+        const t = text.replace(/\s+/g, ' ');
+        console.log('[debug] doc', d.docNo, 'listWeek', d.week, 'report', r.reportWeek, 'data', r.dataWeek);
+        for (const m of t.matchAll(/(\d{4})년(?:도)?\s*감염병\s*표본감시\s*주간소식지\s*(\d+)\s*주차/g)) console.log('[debug]   title@', m.index, m[0]);
+        const k = t.search(/1\.\s*인플루엔자\s*환자감시/); console.log('[debug]   flu@', k, JSON.stringify(t.slice(k, k + 260)));
+      }
       for (const [id, pts] of Object.entries(r.points)) changed += upsert(data, id, pts, { source: BULLETIN_SRC, sourceUrl: url });
       for (const [id, note] of Object.entries(r.notes)) { const s = data.series.find(x => x.id === id); if (s) s.note = note; }
       done.add(d.docNo); last = r;
@@ -119,7 +134,15 @@ async function bulletin(data, status) {
 async function press(data, status) {
   let items = [];
   for (const b of [42, 41]) {
-    try { items = items.concat(findFluPress(await get(`https://www.kdca.go.kr/bbs/kdca/${b}/artclList.do`))); } catch (e) { status.detail = e.message; }
+    try {
+      const html = await get(`https://www.kdca.go.kr/bbs/kdca/${b}/artclList.do`);
+      items = items.concat(findFluPress(html));
+      if (process.env.DEBUG) {
+        console.log('[debug] press', b, 'len', html.length, 'found', items.length);
+        const i = html.search(/artclView|인플루엔자/);
+        console.log('[debug] press-snippet', JSON.stringify(html.slice(Math.max(0, i - 400), i + 500)));
+      }
+    } catch (e) { status.detail = e.message; }
   }
   const seen = new Set(); items = items.filter(x => !seen.has(x.id) && seen.add(x.id)).sort((a, b) => b.id - a.id).slice(0, 2);
   if (!items.length) { status.status = 'error'; status.detail = status.detail || '인플루엔자 보도자료를 찾지 못함'; return 0; }
