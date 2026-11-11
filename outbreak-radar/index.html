@@ -266,7 +266,7 @@ html,body{margin:0}
       sec.appendChild(el('div','rd-muted','최근 '+fmt(r.last)+' '+s.unit+' ('+D.weekLabel(r.lastKey)+') · 전주 대비 '+sg(r.wow)));
       var ul=el('ul','rd-reasons');r.reasons.forEach(function(x){ul.appendChild(el('li',null,x))});
       if(s.ref)ul.appendChild(el('li',null,'기준 고점: '+s.refLabel+' '+fmt(s.ref)));
-      if(s.note)ul.appendChild(el('li',null,s.note));sec.appendChild(ul);
+      if(s.note&&(!s.noteWeek||s.noteWeek===r.lastKey))ul.appendChild(el('li',null,s.note));sec.appendChild(ul);
       sec.appendChild(chart(s,host));
       var src=el('div','rd-src','출처: '+s.source+' ');if(s.sourceUrl){var a=el('a',null,'원문');a.href=s.sourceUrl;a.target='_blank';a.rel='noopener';src.appendChild(a)}sec.appendChild(src);
       d.appendChild(sec);

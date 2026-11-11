@@ -74,11 +74,11 @@ export function parseWeeklyBulletin(text) {
 
   // 3. 급성호흡기감염증(병원급 입원)
   const ari = section(t, /3\.\s*급성호흡기감염증/, /4\.\s*중증급성호흡기감염증/);
-  if ((m = ari.match(/\(바이러스성\)\s*급성호흡기감염증\s*입원환자\s*수?\s*([\d,]+)명으로\s*전주\(([\d,]+)명\)[^순]*?((?:[가-힣A-Za-z\s]+?\s*[\d.]+%\s*,?\s*)+)순/))) {
+  if ((m = ari.match(/\(바이러스성\)\s*급성호흡기감염증\s*입원환자\s*수?\s*([\d,]+)명으로\s*전주\(([\d,]+)명\)[^순]*?((?:[가-힣A-Za-z0-9\s]+?\s*[\d.]+%\s*,?\s*)+)(?:등의\s*)?순/))) {
     put('ari-hosp', W, num(m[1])); put('ari-hosp', prevW, num(m[2]));
     const total = num(m[1]);
     N['ari-hosp'] = `${W}주 원인: ${m[3].replace(/^.*?대비\s*(?:증가|감소|유사)\s*/, '').trim()}`;
-    const shares = [...m[3].matchAll(/([가-힣A-Za-z\s]+?)\s*([\d.]+)%/g)].map(x => [x[1].trim(), +x[2]]);
+    const shares = [...m[3].matchAll(/([가-힣A-Za-z0-9\s]+?)\s*([\d.]+)%/g)].map(x => [x[1].trim(), +x[2]]);
     for (const [name, pct] of shares) {
       if (/호흡기세포융합/.test(name)) put('rsv-hosp', W, Math.round(total * pct / 100));
       if (/리노/.test(name)) put('rhino-hosp', W, Math.round(total * pct / 100));
@@ -112,7 +112,7 @@ export function parseWeeklyBulletin(text) {
   }
   if ((m = t.match(/수족구병[\s\S]{0,200}?0-6세\s*([\d.]+)명/))) put('hfmd-0-6', W, +m[1]);
 
-  return { year: Y, reportWeek: RW, dataWeek: `${W > RW ? Y - 1 : Y}-${W}`, points: P, notes: N };
+  return { year: Y, reportWeek: RW, dataWeek: `${W > RW ? Y - 1 : Y}-${W}`, points: P, notes: N, noteWeek: key(Y, RW, W) };
 }
 
 /**

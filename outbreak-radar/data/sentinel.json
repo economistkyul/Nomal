@@ -386,7 +386,8 @@
      "2026-44",
      461
     ]
-   ]
+   ],
+   "noteWeek": "2026-44"
   },
   {
    "id": "flu-pos",
@@ -441,7 +442,8 @@
      "2026-44",
      30
     ]
-   ]
+   ],
+   "noteWeek": "2026-44"
   },
   {
    "id": "covid-hosp",
@@ -490,7 +492,6 @@
    "kind": "official",
    "metric": "급성호흡기감염증 입원환자 수",
    "unit": "명/주",
-   "note": "리노·RSV·아데노 등 바이러스 합계. 중증(상급종합) 입원은 256→262명",
    "source": "질병청 감염병 표본감시 주간소식지 44주(와이드경제 보도)",
    "sourceUrl": "https://www.widedaily.com/news/articleView.html?idxno=302993",
    "points": [

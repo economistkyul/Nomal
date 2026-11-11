@@ -62,7 +62,11 @@ function upsert(data, id, pts, meta = {}) {
     const t = T[id] || {};
     s = { id, region: '전국', kind: 'official', ...t, ...meta, points: [] };
     data.series.push(s);
-  } else if (meta.source) { s.source = meta.source; s.sourceUrl = meta.sourceUrl; }
+  } else if (meta.source) {
+    // 출처가 바뀌면(정리본→질병청 원문 등) 주차가 없는 옛 설명은 지운다
+    if (s.source !== meta.source && !s.noteWeek) delete s.note;
+    s.source = meta.source; s.sourceUrl = meta.sourceUrl;
+  }
   let changed = 0;
   for (const [k, v] of pts) {
     if (v == null || Number.isNaN(v)) continue;
@@ -122,7 +126,7 @@ async function bulletin(data, status) {
         const a5 = t.search(/5\.\s*장관감염증/); console.log('[debug]   ent@', a5, JSON.stringify(t.slice(a5, a5 + 400)));
       }
       for (const [id, pts] of Object.entries(r.points)) changed += upsert(data, id, pts, { source: BULLETIN_SRC, sourceUrl: url });
-      for (const [id, note] of Object.entries(r.notes)) { const s = data.series.find(x => x.id === id); if (s) s.note = note; }
+      for (const [id, note] of Object.entries(r.notes)) { const s = data.series.find(x => x.id === id); if (s) { s.note = note; s.noteWeek = r.noteWeek; } }
       done.add(d.docNo); last = r;
     } catch (e) { status.detail = e.message; }
   }
