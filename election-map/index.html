@@ -216,7 +216,7 @@ details.fold summary{cursor:pointer;font-weight:700;padding:4px 0}
 
 <div class="app">
   <header class="band">
-    <div class="brand"><h1>세계 선거 지도</h1><span class="asof">자료 수집 2026.11.13 · 상태와 D-day는 열어 본 날짜 기준으로 계산됩니다</span></div>
+    <div class="brand"><h1>세계 선거 지도</h1><span class="asof">자료 수집 2026.11.14 · 상태와 D-day는 열어 본 날짜 기준으로 계산됩니다</span></div>
     <div class="tickrow"><span class="onair">속보</span><div class="tickwrap"><div class="tick" id="tick"></div></div></div>
   </header>
 
@@ -319,9 +319,9 @@ const E=[
 
 {id:"cpv",c:"카보베르데",iso:"CPV",marker:true,reg:"africa",type:"대선",title:"카보베르데 대통령 선거",date:"2026-11-15",end:"2026-11-16",ll:[14.9,-23.5],
  sum:"현직 대통령 호세 마리아 네베스가 재선을 노립니다. 과반 득표자가 없으면 11월 29일 결선을 치릅니다.",
- facts:[["투표일","2026.11.15 (일) 현지 8시~18시"],["결선 (필요 시)","11.29"],["선거운동 기간","11.1~11.13 (Africanews 보도 기준)"],["후보","6명 (현직 네베스는 PAICV 지지, 주요 경쟁자는 전 법무장관 조아나 호자(Joana Rosa)로 MpD 지원)"],["당선 조건","유효표 과반"]],
+ facts:[["투표일","2026.11.15 (일) 현지 8시~18시"],["결선 (필요 시)","11.29"],["선거운동 기간","11.1~11.13 (Africanews 보도 기준)"],["후보","6명 (Rio Times·Africanews 기준, 헌법재판소 승인은 5명으로 보도돼 확인 필요. 현직 네베스는 PAICV 지지, 주요 경쟁자는 전 법무장관 조아나 호자(Joana Rosa)로 MpD 지원)"],["당선 조건","유효표 과반"]],
  fc:{note:"공개된 여론조사나 모델은 확인하지 못했습니다.",bars:[],src:["cpvo"]},
- src:["cpvo","cpvp","cpvw"]},
+ src:["cpvm","cpvo","cpvp","cpvw"]},
 
 {id:"esp",c:"스페인",iso:"ESP",reg:"europe",type:"조기 총선",title:"스페인 조기 총선",date:"2026-11-29",end:"2026-12-01",ll:[40.4,-3.7],
  sum:"산체스 총리가 주택 정책 법안이 의회에서 부결된 뒤 10월 5일 조기 총선을 발표했습니다. 원래 일정은 2027년 여름이었습니다.",
@@ -329,8 +329,8 @@ const E=[
  fc:{note:"여론조사 평균에서 국민당과 복스를 합친 의석이 과반을 넘습니다. 예측시장은 국민당 대표 페이호의 총리 취임에 높은 가격을 매겼습니다.",bars:[],
   stacks:[{t:"여론조사 평균 의석 (과반 176)",total:350,maj:176,segs:[["국민당+복스 약 201",201,"r"],["사회노동당+기존 우군 약 146",146,"d"]]}],src:["esp1","esp2"]},
  poll:{head:"득표율 평균 (PolitPro 집계 인용)",bars:[["국민당 (PP)",32.1,"32.1%"],["사회노동당 (PSOE)",26.4,"26.4%"],["복스 (Vox)",18.9,"18.9%"],["수마르·전선",6.4,"6.4%"],["포데모스",2.9,"2.9%"]],
-  rows:[["조사기관","국민당","사회노동당","복스"],["Sigma Dos (10.1~14)","31.5","25.3","19.5"],["IMOP (10.13~16)","28.5","27.1","20.0"],["Sondaxe (10.26~28)","29.2","26.9","19.2"],["CIS 국영 (10.1~6)","22.2","34.0","17.1"]],
-  note:"국영 CIS만 사회노동당이 11.8%p 앞서고 민간 조사는 모두 국민당이 앞섭니다. 민간 조사는 국민당과 복스를 합쳐 176석을 넘긴다고 봅니다.",src:["esp1","esp3"]},
+  rows:[["조사기관","국민당","사회노동당","복스"],["Sigma Dos (10.1~14)","31.5","25.3","19.5"],["IMOP (10.13~16)","28.5","27.1","20.0"],["Sondaxe (10.26~28)","29.2","26.9","19.2"],["Sigma Dos (10.30~11.6)","31.0","25.2","19.4"],["CIS 국영 (10.1~6)","22.2","34.0","17.1"]],
+  note:"국영 CIS만 사회노동당이 11.8%p 앞서고 민간 조사는 모두 국민당이 앞섭니다. 민간 조사는 국민당과 복스를 합쳐 176석을 넘긴다고 봅니다. Sigma Dos·GAD3(11.9 보도)는 두 당이 득표율 50.4%, 199석을 얻는다고 추정했습니다.",src:["esp1","esp3","esp6"]},
  src:["esp1","esp2","esp3","esp4","esp5"]},
 
 {id:"gmb",c:"감비아",iso:"GMB",reg:"africa",type:"대선",title:"감비아 대통령 선거",date:"2026-12-05",end:"2026-12-07",ll:[13.45,-16.6],
@@ -488,6 +488,8 @@ const S={
   vicw:["Wikipedia 빅토리아 선거","https://en.wikipedia.org/wiki/2026_Victorian_state_election"],
   cpvo:["Rio Times 예측시장","https://www.riotimesonline.com/cabo-verde-markets-give-president-86-odds/"],
   cpvp:["Rio Times 준비 현황","https://www.riotimesonline.com/cabo-verde-election-prep-halfway/"],
+  cpvm:["Rio Times 투표 2주 전 점검","https://www.riotimesonline.com/cabo-verde-presidential-vote-two-weeks-out-what-to-watch/"],
+  cpvf:["Forbes Africa Lusófona: 헌법재판소 후보 5명 승인","https://forbesafricalusofona.com/?p=176618"],
   cpvw:["Wikipedia 카보베르데","https://en.wikipedia.org/wiki/2026_Cape_Verdean_presidential_election"],
   esp1:["Rio Times 여론조사 추적","https://www.riotimesonline.com/spain-election-poll-tracker/"],
   esp2:["Rio Times 예측시장","https://www.riotimesonline.com/spain-right-holds-poll-lead-left-splits/"],
@@ -535,6 +537,7 @@ const S={
   swe3:["The Local (스웨덴 총리 표결 이후 일정, 11.2~4)","https://www.thelocal.se/20261102/second-vote-what-happens-next-in-swedens-government-formation-process"],
   jpo:["Jerusalem Post (헤르조그 협의, 11.2)","https://jpost.com/israel-election-2026/article-913577"],
   tls:["The Local (스웨덴 정부 구성, 10.28)","https://www.thelocal.se/20261028/today-in-sweden-a-roundup-of-the-latest-news-on-wednesday-269"],
+  esp6:["que.es Sigma Dos·GAD3 조사 (11.9)","https://www.que.es/2026/11/09/encuestas-29n-pp-vox-199-escanos/"],
   esp5:["Rio Times (Sondaxe 조사, 11.1)","https://www.riotimesonline.com/spain-conservatives-lead-sondaxe-poll-2026-11/"],
   afn:["Africanews (카보베르데, 11.1)","https://www.africanews.com/2026/11/01/cape-verde-president-rallies-supporters-as-campaigns-kick-off/"]
 };
@@ -568,7 +571,7 @@ const MK={
  ],
  nz:[{p:"Polymarket",q:"다음 뉴질랜드 총리는?",asof:"11.4",u:"pred",chip:"힙킨스 총리 57% (투표 전 가격)",items:[["크리스 힙킨스 (노동당)",57,"57%"],["크리스토퍼 룩슨 (국민당)",38,"38%"]],note:"합계 95%, 나머지는 그 밖의 결과입니다"}],
  vic:[{p:"Kalshi",q:"빅토리아주 총선 승자는?",asof:"11.4",u:"kal",chip:"야당 연합 83%",items:[["자유·국민 연합",83,"83%"],["노동당",23,"23%"],["원네이션",11,"11%"]],note:"세 값의 합이 100%를 넘고 거래량이 적어(약 6천 달러) 참고용입니다"}],
- cpv:[{p:"Polymarket",q:"네베스 대통령이 당선될까?",asof:"10.28",u:"cpvo",chip:"네베스 당선 86%",items:[["네베스 당선",86,"86%"]]}],
+ cpv:[{p:"Polymarket",q:"네베스 대통령이 당선될까?",asof:"11.9",u:"cpvm",chip:"네베스 당선 약 95%",items:[["네베스 당선",95.5,"약 95.5%"],["호자(Rosa) 당선",3.2,"약 3.2%"]],note:"거래량 약 4.2만 달러로 적습니다. 같은 기사의 요약문은 88%라고 적어 수치가 엇갈립니다. 10.28에는 86%였습니다."}],
  esp:[
   {p:"Polymarket",q:"페이호(국민당)가 다음 총리가 될까?",asof:"11.1",u:"esp5",chip:"페이호 총리 84%",items:[["페이호 총리 (국민당)",84,"84%"],["산체스 (사회노동당)",11,"11.2%"],["아바스칼 (복스)",3,"2.5%"]]},
   {p:"Kalshi",q:"페이호(국민당)가 다음 총리가 될까?",asof:"11.1",u:"esp5",items:[["페이호 총리",84,"84%"]]}
@@ -579,7 +582,7 @@ const EASY={
  us:["민주당이 상원과 하원을 모두 가져갈 것으로 방송사들이 예측하고 있습니다. 미시시피 상원도 민주당이 뒤집었고, 알래스카 상원 등 일부는 아직 끝나지 않았습니다.","대통령 임기 중간에 치르는 선거라 평가 성격이 강합니다. 의회 다수당이 바뀌면 법안과 예산을 처리하는 주도권이 달라집니다."],
  nz:["예측시장에서는 노동당 힙킨스가 총리가 될 가능성(57%)이 룩슨 현 총리(38%)보다 높게 매겨져 있습니다.","한 정당이 혼자 과반을 얻기 어려워, NZ First 같은 작은 당이 어느 쪽에 붙는지가 정부를 정합니다."],
  vic:["12년 집권한 노동당이 밀리고 있습니다. 여론조사와 예측시장 모두 야당 연합이 앞섭니다.","호주 연방 선거가 아니라 빅토리아주(멜버른 일대)의 주 선거입니다."],
- cpv:["현직 네베스 대통령이 당선될 가능성이 높게 평가됩니다.","과반을 얻는 후보가 없으면 11월 29일 결선을 치릅니다."],
+ cpv:["현직 네베스 대통령이 당선될 가능성이 약 95%로 평가됩니다 (폴리마켓 11.9 기준, 거래량 적음).","과반을 얻는 후보가 없으면 11월 29일 결선을 치릅니다."],
  esp:["국민당 페이호가 다음 총리가 될 가능성이 84%로 평가됩니다 (11.1 기준).","여론조사에서 국민당과 극우 복스를 합치면 과반을 넘기지만, 국영 CIS 조사만 사회노동당이 앞섭니다."],
  gmb:["현직 바로 대통령이 3선에 도전합니다. 야당이 여럿으로 갈라진 것이 변수입니다.","확인된 최신 여론조사가 없어 예측이 불확실합니다."]
 };
@@ -588,8 +591,8 @@ const NEWS={
  us:[["fxak","Fox News: 펠톨라 알래스카 상원 격차 2,517표 (11.10)"],["dmdk","Democracy Docket: 콜롬 승리, 하이드스미스 패배 인정 (11.11)"],["wlbt","WLBT: 하이드스미스 '결정을 존중한다' (11.12)"],["t270","270toWin: 미결정 경합 정리, 상원 다수 확정 (11.10)"],["msfp","Mississippi Free Press: 상원 개표 실시간 중계 (11.11)"],["wlrn","WLRN: 오하이오 브라운 승리 (11.3)"],["yhm","Yahoo: AP 집계 의석 현황, 미시시피·알래스카 미결정 (11.7)"],["cnn","CNN: 실시간 중계, 의회 승패 속보"],["cbs","CBS: 하원 개표 결과와 출구조사"],["cnbc","CNBC: 실시간 중계, 트럼프 결과 수용 발언"],["nbc","NBC: 개표 현황과 상원 탈환 보도"],["msnow","MS NOW: 민주당이 양원을 가져가는 흐름 분석"],["fnn","Federal News Network: 상원 예측시장 현황 (10.20)"],["nwk1","Newsweek: 예측시장 속 민주당 기대치 (3월)"],["nwk2","Newsweek: 민주당 양원 승리와 알래스카 상원 접전 (11.4)"],["akp","Alaska Public Media: 알래스카 개표 현황 (11.4)"],["rsn","Reason: 펠톨라 근소 우세, 개표 약 3/4 (11.6)"],["defi","DeFi Rate: 예측시장 확률 모음"],["pollcheck","PollCheck: 일반 투표와 지지율 평균"],["poliwave","Poliwave: 모델 예측"]],
  nz:[["n1w","1News: Opportunity, 룩슨·힙킨스와 회동 (11.10)"],["n1e","1News: 초접전 선거구 5곳 (11.8)"],["opb","OPB: 승자 불분명, 특별투표 3주 (11.8)"],["nzel","선거관리위원회: 잠정 결과 (11.7)"],["nwk2","Newsweek: 중도우파 67석, 초접전"],["pred","PredScope: 폴리마켓 총리 시장 현황"],["n1v","1News: 마지막 여론조사, 접전 (11.3)"],["nzp","Wikipedia: 여론조사 모음"],["odt","ODT: RNZ 조사에서 NZ First 3위"],["spin","The Spinoff: 룩슨과 힙킨스 접전 분석 (3월)"],["itst","interest.co.nz: 총선 일정 발표"],["nzw","Wikipedia: 선거 개요"]],
  vic:[["kal","Kalshi: 승자 예측시장"],["vicn","The Nightly: 야당 대표 윌슨 우세 보도"],["vicp","빅토리아 의회: 선거 일정"],["vicw","Wikipedia: 선거 개요"]],
- cpv:[["afn","Africanews: 선거운동 시작, 후보 6명 (11.1)"],["cpvo","Rio Times: 예측시장 86%"],["cpvp","Rio Times: 선거 준비 현황"],["cpvw","Wikipedia: 선거 개요"]],
- esp:[["esp5","Rio Times: Sondaxe 조사와 예측시장 84% (11.1)"],["esp1","Rio Times: 여론조사 추적"],["esp2","Rio Times: 예측시장과 좌파 분열"],["esp3","Rio Times: CIS 조사와 민간 조사 비교"],["esp4","ITV: 산체스 조기 총선 발표"]]
+ cpv:[["cpvm","Rio Times: 폴리마켓 네베스 약 95%, 후보 6명 (11.9 기준)"],["cpvf","Forbes Africa Lusófona: 헌법재판소가 5명 후보 승인"],["afn","Africanews: 선거운동 시작, 후보 6명 (11.1)"],["cpvo","Rio Times: 예측시장 86%"],["cpvp","Rio Times: 선거 준비 현황"],["cpvw","Wikipedia: 선거 개요"]],
+ esp:[["esp6","que.es: Sigma Dos·GAD3 조사, 국민당+복스 199석 (11.9)"],["esp5","Rio Times: Sondaxe 조사와 예측시장 84% (11.1)"],["esp1","Rio Times: 여론조사 추적"],["esp2","Rio Times: 예측시장과 좌파 분열"],["esp3","Rio Times: CIS 조사와 민간 조사 비교"],["esp4","ITV: 산체스 조기 총선 발표"]]
 };
 E.forEach(e=>{e.mk=MK[e.id]||null;});
 
