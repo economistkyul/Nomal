@@ -1,7 +1,7 @@
 {
  "_readme": "GitHub Actions가 매일 scripts/update.mjs로 자동 갱신합니다. 손으로 고칠 때는 points에 [\"연도-주차\", 값]을 추가하세요.",
- "updated": "2026-11-12",
- "latestWeek": "2026-45",
+ "updated": "2026-11-19",
+ "latestWeek": "2026-46",
  "diseases": [
   {
    "id": "flu",
@@ -75,8 +75,8 @@
    "metric": "의사환자 분율",
    "unit": "명/외래 1,000명",
    "threshold": 12.9,
-   "source": "질병청 인플루엔자 보도자료",
-   "sourceUrl": "https://www.kdca.go.kr/bbs/kdca/42/313376/artclView.do",
+   "source": "질병청 감염병 표본감시 주간소식지",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-32",
@@ -125,6 +125,10 @@
     [
      "2026-45",
      28.9
+    ],
+    [
+     "2026-46",
+     37
     ]
    ],
    "ref": 70.9,
@@ -348,7 +352,7 @@
    "unit": "명/주(223곳)",
    "note": "44주 입원환자 중 65세 이상 64.9% · 인플루엔자 양성 사망 신고 21건(전년 동기 4건)",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-33",
@@ -388,11 +392,15 @@
     ],
     [
      "2026-44",
-     461
+     460
     ],
     [
      "2026-45",
      639
+    ],
+    [
+     "2026-46",
+     926
     ]
    ],
    "noteWeek": "2026-44"
@@ -408,7 +416,7 @@
    "unit": "%",
    "note": "44주 우세 아형 A(H1N1)pdm09 (29.8%)",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-32",
@@ -453,6 +461,10 @@
     [
      "2026-45",
      27.7
+    ],
+    [
+     "2026-46",
+     33.1
     ]
    ],
    "noteWeek": "2026-44"
@@ -467,7 +479,7 @@
    "metric": "코로나19 입원환자 수",
    "unit": "명/주",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-39",
@@ -496,6 +508,10 @@
     [
      "2026-45",
      196
+    ],
+    [
+     "2026-46",
+     224
     ]
    ]
   },
@@ -509,7 +525,7 @@
    "metric": "급성호흡기감염증 입원환자 수",
    "unit": "명/주",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-43",
@@ -522,10 +538,14 @@
     [
      "2026-45",
      1560
+    ],
+    [
+     "2026-46",
+     1945
     ]
    ],
-   "note": "45주 원인: 인플루엔자 바이러스 41.0%, 리노바이러스 25.2%, 코로나19 12.6%",
-   "noteWeek": "2026-45"
+   "note": "46주 원인: 인플루엔자 바이러스 47.6%, 리노바이러스 18.7%, 코로나19 11.5%",
+   "noteWeek": "2026-46"
   },
   {
    "id": "hfmd-0-6",
@@ -537,7 +557,7 @@
    "metric": "수족구병 의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-40",
@@ -562,6 +582,10 @@
     [
      "2026-45",
      6.6
+    ],
+    [
+     "2026-46",
+     5.8
     ]
    ]
   },
@@ -1157,7 +1181,7 @@
    "metric": "코로나19 바이러스 검출률",
    "unit": "%",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-39",
@@ -1186,6 +1210,10 @@
     [
      "2026-45",
      7.8
+    ],
+    [
+     "2026-46",
+     7.3
     ]
    ]
   },
@@ -1199,7 +1227,7 @@
    "metric": "마이코플라스마 입원환자 수(추정)",
    "unit": "명/주",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-42",
@@ -1216,10 +1244,14 @@
     [
      "2026-45",
      44
+    ],
+    [
+     "2026-46",
+     35
     ]
    ],
-   "note": "45주 세균성 입원 46명 중 마이코플라스마 95.7%",
-   "noteWeek": "2026-45"
+   "note": "46주 세균성 입원 40명 중 마이코플라스마 87.5%",
+   "noteWeek": "2026-46"
   },
   {
    "id": "sari-hosp",
@@ -1231,7 +1263,7 @@
    "metric": "중증급성호흡기감염증 입원환자 수",
    "unit": "명/주",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-41",
@@ -1251,7 +1283,11 @@
     ],
     [
      "2026-45",
-     343
+     359
+    ],
+    [
+     "2026-46",
+     321
     ]
    ]
   },
@@ -1265,7 +1301,7 @@
    "metric": "장관감염증 환자 수",
    "unit": "명/주",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-41",
@@ -1286,6 +1322,10 @@
     [
      "2026-45",
      536
+    ],
+    [
+     "2026-46",
+     463
     ]
    ]
   },
@@ -1299,7 +1339,7 @@
    "metric": "노로바이러스 환자 수(추정)",
    "unit": "명/주",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-42",
@@ -1316,10 +1356,14 @@
     [
      "2026-45",
      96
+    ],
+    [
+     "2026-46",
+     105
     ]
    ],
-   "note": "45주 장관감염증 536명 × 바이러스 48.5% × 노로 36.9%",
-   "noteWeek": "2026-45"
+   "note": "46주 장관감염증 463명 × 바이러스 52.5% × 노로 43.2%",
+   "noteWeek": "2026-46"
   },
   {
    "id": "hfmd-ili",
@@ -1331,7 +1375,7 @@
    "metric": "수족구병 의사환자 분율",
    "unit": "명/외래 1,000명",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-41",
@@ -1352,6 +1396,10 @@
     [
      "2026-45",
      4.3
+    ],
+    [
+     "2026-46",
+     4
     ]
    ]
   },
@@ -1417,7 +1465,7 @@
    "metric": "리노바이러스 입원환자 수(추정)",
    "unit": "명/주",
    "source": "질병청 감염병 표본감시 주간소식지",
-   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261112163809554&q_clsfNo=2",
+   "sourceUrl": "https://dportal.kdca.go.kr/pot/bbs/BD_selectBbs.do?q_bbsSn=1010&q_bbsDocNo=20261119172118068&q_clsfNo=2",
    "points": [
     [
      "2026-44",
@@ -1426,6 +1474,10 @@
     [
      "2026-45",
      393
+    ],
+    [
+     "2026-46",
+     364
     ]
    ]
   }
@@ -1435,15 +1487,17 @@
    "20261022164832775",
    "20261029165104848",
    "20261105173342597",
-   "20261112163809554"
+   "20261112163809554",
+   "20261119172118068"
   ],
-  "lastRun": "2026-11-17 18:13",
+  "lastRun": "2026-11-19 17:48",
   "sources": [
    {
     "id": "bulletin",
     "name": "질병청 주간소식지",
     "status": "ok",
-    "detail": "새 글 없음(최신 2026년 45주차)"
+    "detail": "2026년 46주차 소식지 반영(+15값)",
+    "week": "2026-46"
    },
    {
     "id": "press",
