@@ -216,7 +216,7 @@ details.fold summary{cursor:pointer;font-weight:700;padding:4px 0}
 
 <div class="app">
   <header class="band">
-    <div class="brand"><h1>세계 선거 지도</h1><span class="asof">자료 수집 2026.11.24 · 상태와 D-day는 열어 본 날짜 기준으로 계산됩니다</span></div>
+    <div class="brand"><h1>세계 선거 지도</h1><span class="asof">자료 수집 2026.11.26 · 상태와 D-day는 열어 본 날짜 기준으로 계산됩니다</span></div>
     <div class="tickrow"><span class="onair">속보</span><div class="tickwrap"><div class="tick" id="tick"></div></div></div>
   </header>
 
@@ -333,7 +333,7 @@ const E=[
   stacks:[{t:"여론조사 평균 의석 (과반 176)",total:350,maj:176,segs:[["국민당+복스 약 201",201,"r"],["사회노동당+기존 우군 약 146",146,"d"]]}],src:["esp1","esp2"]},
  poll:{head:"득표율 평균 (PolitPro 집계 인용)",bars:[["국민당 (PP)",32.1,"32.1%"],["사회노동당 (PSOE)",26.4,"26.4%"],["복스 (Vox)",18.9,"18.9%"],["수마르·전선",6.4,"6.4%"],["포데모스",2.9,"2.9%"]],
   rows:[["조사기관","국민당","사회노동당","복스"],["Sigma Dos (10.1~14)","31.5","25.3","19.5"],["IMOP (10.13~16)","28.5","27.1","20.0"],["Sondaxe (10.26~28)","29.2","26.9","19.2"],["Sigma Dos (10.30~11.6)","31.0","25.2","19.4"],["Sondaxe (11.15 발표)","30.8","26.4","18.2"],["40dB (11.19 발표)","32.2","30.2","17.6"],["CIS 국영 (10.1~6)","22.2","34.0","17.1"]],
-  note:"국영 CIS만 사회노동당이 11.8%p 앞서고 민간 조사는 모두 국민당이 앞섭니다. 민간 조사는 국민당과 복스를 합쳐 176석을 넘긴다고 봅니다. Sigma Dos·GAD3(11.9 보도)는 두 당이 득표율 50.4%, 199석을 얻는다고 추정했습니다. 40dB(11.19, 엘파이스·SER)는 국민당 134석, 사회노동당 120석, 복스 58석으로 국민당+복스 192석을 추정했습니다. Sondaxe(11.15)는 국민당 130석, 사회노동당 106석, 복스 65석으로 국민당+복스 195석을 추정했습니다.",src:["esp1","esp3","esp6","esp7"]},
+  note:"국영 CIS만 사회노동당이 11.8%p 앞서고 민간 조사는 모두 국민당이 앞섭니다. 민간 조사는 국민당과 복스를 합쳐 176석을 넘긴다고 봅니다. Sigma Dos·GAD3(11.9 보도)는 두 당이 득표율 50.4%, 199석을 얻는다고 추정했습니다. 40dB(11.19, 엘파이스·SER)는 국민당 134석, 사회노동당 120석, 복스 58석으로 국민당+복스 192석을 추정했습니다. Sondaxe(11.15)는 국민당 130석, 사회노동당 106석, 복스 65석으로 국민당+복스 195석을 추정했습니다. 여론조사 공표 마지막 날(11.23) 발표된 최종 추적조사에서 40dB는 국민당 31.8%·130석, 사회노동당 30.9%·124석, 복스 17.3%·57석(국민당+복스 187석)으로 두 당 격차가 크게 줄었고, Ipsos는 국민당+복스 190석, Sondaxe는 국민당 130석·복스 58석, Sociométrica는 국민당+복스 197석을 내놨습니다. 국영 CIS(11월)는 의석을 내지 않고 사회노동당이 득표율에서 10%p 안팎 앞선다고 밝혔습니다(que.es 11.24 보도). 최종 조사들은 국민당+복스가 187~199석으로 과반(176)을 넘긴다고 봅니다.",src:["esp1","esp3","esp6","esp7","esp9"]},
  src:["esp1","esp2","esp3","esp4","esp5","esp8"]},
 
 {id:"gmb",c:"감비아",iso:"GMB",reg:"africa",type:"대선",title:"감비아 대통령 선거",date:"2026-12-05",end:"2026-12-07",ll:[13.45,-16.6],
@@ -555,6 +555,7 @@ const S={
   esp7:["democrata.es Sondaxe 추적조사 (11.15)","https://www.democrata.es/encuestas/elecciones-generales/tracking-encuesta-29n-hoy-sondaxe-15-noviembre-2026/"],
   gmb4:["TimesLIVE/로이터: 감비아 선관위, 바로 포함 후보 9명 승인 (11.16)","https://www.timeslive.co.za/news/africa/2026-11-16-gambia-clears-barrow-to-run-for-third-presidential-term-approves-eight-other-candidates/"],
   esp6:["que.es Sigma Dos·GAD3 조사 (11.9)","https://www.que.es/2026/11/09/encuestas-29n-pp-vox-199-escanos/"],
+  esp9:["que.es 29N 최종 조사 종합 (11.24)","https://www.que.es/2026/11/24/encuestas-29n-feijoo-mayoria-pp-vox/"],
   esp8:["democrata.es 40dB 조사 (11.19)","https://www.democrata.es/en/general-elections-spain/general-election-survey-pp-and-vox-add-up-to-192-seats-before-the-debate-between-sanchez-and-feijoo-according-to-40db/"],
   hti2:["DH/Belga 아이티 선거 일정 연기 (10.6)","https://www.dhnet.be/dernieres-depeches/2026/10/06/le-conseil-electoral-haitien-reporte-les-elections-R6SNCNXCF5GXFENSLH5DOCPFQY/"],
   hti3:["Jamaica Gleaner 아이티 12.13 투표 발표 (7.28)","https://jamaica-gleaner.com/article/world-news/20260729/haitians-vote-december-13-first-election-10-years"],
@@ -614,7 +615,7 @@ const NEWS={
  nz:[["n1x","1News: 룩슨, 특별투표 약 40만 표 대기·정식 연정 협상은 확정 뒤 (11.16)"],["n1w","1News: Opportunity, 룩슨·힙킨스와 회동 (11.10)"],["n1e","1News: 초접전 선거구 5곳 (11.8)"],["opb","OPB: 승자 불분명, 특별투표 3주 (11.8)"],["nzel","선거관리위원회: 잠정 결과 (11.7)"],["nwk2","Newsweek: 중도우파 67석, 초접전"],["pred","PredScope: 폴리마켓 총리 시장 현황"],["n1v","1News: 마지막 여론조사, 접전 (11.3)"],["nzp","Wikipedia: 여론조사 모음"],["odt","ODT: RNZ 조사에서 NZ First 3위"],["spin","The Spinoff: 룩슨과 힙킨스 접전 분석 (3월)"],["itst","interest.co.nz: 총선 일정 발표"],["nzw","Wikipedia: 선거 개요"]],
  vic:[["kal","Kalshi: 승자 예측시장"],["vicn","The Nightly: 야당 대표 윌슨 우세 보도"],["vicp","빅토리아 의회: 선거 일정"],["vicw","Wikipedia: 선거 개요"]],
  cpv:[["cpvx","Xinhua: 네베스 63.8% 승리 선언, 개표 약 97% (11.16)"],["cpvn","Rio Times: 네베스 재선, 호자 31.6%·패배 인정 (11.16)"],["cpvr","TSF: 네베스 63.7%, 호자 31.6% (개표 93%, 11.15)"],["cpvt","RTP: 네베스 개표 선두 (11.15)"],["cpvm","Rio Times: 폴리마켓 네베스 약 95%, 후보 6명 (11.9 기준)"],["cpvf","Forbes Africa Lusófona: 헌법재판소가 5명 후보 승인"],["afn","Africanews: 선거운동 시작, 후보 6명 (11.1)"],["cpvo","Rio Times: 예측시장 86%"],["cpvp","Rio Times: 선거 준비 현황"],["cpvw","Wikipedia: 선거 개요"]],
- esp:[["esp8","democrata.es: 40dB 조사, 국민당 134석·사회노동당 120석·복스 58석 (11.19)"],["esp7","democrata.es: Sondaxe 추적조사, 국민당 130석·복스 65석 (11.15)"],["esp6","que.es: Sigma Dos·GAD3 조사, 국민당+복스 199석 (11.9)"],["esp5","Rio Times: Sondaxe 조사와 예측시장 84% (11.1)"],["esp1","Rio Times: 여론조사 추적"],["esp2","Rio Times: 예측시장과 좌파 분열"],["esp3","Rio Times: CIS 조사와 민간 조사 비교"],["esp4","ITV: 산체스 조기 총선 발표"]]
+ esp:[["esp9","que.es: 공표 마지막 날 최종 조사 종합, 국민당+복스 187~199석 (11.24)"],["esp8","democrata.es: 40dB 조사, 국민당 134석·사회노동당 120석·복스 58석 (11.19)"],["esp7","democrata.es: Sondaxe 추적조사, 국민당 130석·복스 65석 (11.15)"],["esp6","que.es: Sigma Dos·GAD3 조사, 국민당+복스 199석 (11.9)"],["esp5","Rio Times: Sondaxe 조사와 예측시장 84% (11.1)"],["esp1","Rio Times: 여론조사 추적"],["esp2","Rio Times: 예측시장과 좌파 분열"],["esp3","Rio Times: CIS 조사와 민간 조사 비교"],["esp4","ITV: 산체스 조기 총선 발표"]]
 };
 E.forEach(e=>{e.mk=MK[e.id]||null;});
 
